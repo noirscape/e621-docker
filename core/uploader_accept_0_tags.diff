@@ -1,0 +1,13 @@
+diff --git a/app/javascript/src/javascripts/uploader.vue b/app/javascript/src/javascripts/uploader.vue
+index 4864a3faa..8f755a835 100644
+--- a/app/javascript/src/javascripts/uploader.vue
++++ b/app/javascript/src/javascripts/uploader.vue
+@@ -803,7 +803,7 @@
+         }).length;
+       },
+       notEnoughTags: function () {
+-        return this.tagCount < 4;
++        return this.tagCount < 0;
+       },
+       invalidRating: function () {
+         return !this.rating;

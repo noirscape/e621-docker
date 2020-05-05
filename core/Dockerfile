@@ -57,6 +57,10 @@ RUN git apply migration_patch.diff
 COPY disable_ssl.diff /app/disable_ssl.diff
 RUN git apply disable_ssl.diff
 
+# Disable uploader limitations
+COPY uploader_accept_0_tags.diff /app/uploader_accept_0_tags.diff
+RUN git apply uploader_accept_0_tags.diff
+
 # 7: sed config to db
 RUN sed -s "s/url: <%= .* %>/host: $DB_URL/g" script/install/database.yml.templ > config/database.yml
 # 7a: sed redis
