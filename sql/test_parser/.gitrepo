@@ -1,0 +1,13 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/r888888888/test_parser.git
+	branch = master
+	commit = 356c676d16a987f9226b3ea419b4e18612c61fef
+	parent = 677e52d6dc4abf63d947da2e47d103452365c9fc
+	method = merge
+	update = auto
+	cmdver = 0.4.1
