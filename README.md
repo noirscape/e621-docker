@@ -62,6 +62,7 @@ Pull Requests for these are welcome.
 * Move compilation of libvips to it's own build stage.
 * Move secret_key and secret_token out of core and make them build arguments.
 * Build script that takes care of creating data folder in the right way and sets up the env file.
+* Finding a way to keep a version of the E621 source code that works in the repository, rather than cloning the latest each time in the container.
 
 ## Not TODO
 
