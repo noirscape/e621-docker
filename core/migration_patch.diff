@@ -1,0 +1,53 @@
+diff --git a/db/migrate/20130424121410_add_name_to_pool_versions.rb b/db/migrate/20130424121410_add_name_to_pool_versions.rb
+index b0b679344..bd7c064c0 100644
+--- a/db/migrate/20130424121410_add_name_to_pool_versions.rb
++++ b/db/migrate/20130424121410_add_name_to_pool_versions.rb
+@@ -2,8 +2,5 @@ class AddNameToPoolVersions < ActiveRecord::Migration[4.2]
+   def change
+     execute("set statement_timeout = 0")
+     add_column :pool_versions, :name, :string
+-    PoolVersion.find_each do |pool_version|
+-      pool_version.update_column(:name, pool_version.pool.name)
+-    end
+   end
+ end
+diff --git a/db/migrate/20130914175431_change_tag_subscription_tag_query_delimiter.rb b/db/migrate/20130914175431_change_tag_subscription_tag_query_delimiter.rb
+index e29e2e7c6..2da4b386b 100644
+--- a/db/migrate/20130914175431_change_tag_subscription_tag_query_delimiter.rb
++++ b/db/migrate/20130914175431_change_tag_subscription_tag_query_delimiter.rb
+@@ -1,8 +1,5 @@
+ class ChangeTagSubscriptionTagQueryDelimiter < ActiveRecord::Migration[4.2]
+   def change
+     execute "set statement_timeout = 0"
+-    TagSubscription.find_each do |tag_subscription|
+-      tag_subscription.update_column(:tag_query, tag_subscription.tag_query.scan(/\S+/).join("\n"))
+-    end
+   end
+ end
+diff --git a/db/migrate/20170428220448_remove_name_and_category_from_saved_searches.rb b/db/migrate/20170428220448_remove_name_and_category_from_saved_searches.rb
+index b33b50935..f6617f6e5 100644
+--- a/db/migrate/20170428220448_remove_name_and_category_from_saved_searches.rb
++++ b/db/migrate/20170428220448_remove_name_and_category_from_saved_searches.rb
+@@ -1,8 +1,5 @@
+ class RemoveNameAndCategoryFromSavedSearches < ActiveRecord::Migration[4.2]
+   def change
+-    SavedSearch.without_timeout do
+-      remove_column :saved_searches, :name, :text
+-      remove_column :saved_searches, :category, :text
+-    end
++    nil
+   end
+ end
+diff --git a/db/migrate/20171219001521_add_is_public_to_favorite_groups.rb b/db/migrate/20171219001521_add_is_public_to_favorite_groups.rb
+index 3333ab019..098abe62e 100644
+--- a/db/migrate/20171219001521_add_is_public_to_favorite_groups.rb
++++ b/db/migrate/20171219001521_add_is_public_to_favorite_groups.rb
+@@ -1,7 +1,5 @@
+ class AddIsPublicToFavoriteGroups < ActiveRecord::Migration[4.2]
+   def change
+-    FavoriteGroup.without_timeout do
+-      add_column :favorite_groups, :is_public, :boolean, default: false, null: false
+-    end
++    nil
+   end
+ end

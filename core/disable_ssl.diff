@@ -1,0 +1,13 @@
+diff --git a/config/application.rb b/config/application.rb
+index 13d913927..7bc3bc11a 100644
+--- a/config/application.rb
++++ b/config/application.rb
+@@ -34,7 +34,7 @@ module Danbooru
+     config.action_mailer.perform_deliveries = true
+     config.log_tags = [->(req) {"PID:#{Process.pid}"}]
+     config.action_controller.action_on_unpermitted_parameters = :raise
+-    config.force_ssl = true
++    config.force_ssl = false
+     config.active_job.queue_adapter = :sidekiq
+ 
+     if Rails.env.production? && Danbooru.config.ssl_options.present?
