@@ -35,6 +35,7 @@ To update the redis, memcached and elasticsearch containers, run `docker-compose
 
 * Migration patches: A couple of migrations have been nilled or modified since they rely on models not in the E621 codebase.
 * SSL disable patch: Disables the forced SSL that E621 normally has.
+* Uploader accepts 0 tags: This changes the JS uploader to not demand tags to be placed on an image.
 * `sed` in `core/cable.yml`: An inline patch to make E621 talk to the redis container server.
 
 ## Things you can't change in local_config

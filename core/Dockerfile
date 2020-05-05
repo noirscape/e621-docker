@@ -14,15 +14,14 @@ ENV RAILS_ENV=production
 
 RUN mkdir -p $INSTALL_PATH
 
-RUN gem install rails bundler
-WORKDIR $INSTALL_PATH
-
 # 3: Install dependencies
-RUN wget -qO - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - 
-RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list
-RUN wget -qO - https://deb.nodesource.com/setup_10.x | bash -
-RUN apt-get update && apt-get install --no-install-recommends -y nodejs yarn build-essential git
-RUN gem install bundler
+RUN wget -qO - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -; \
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list; \
+    wget -qO - https://deb.nodesource.com/setup_10.x | bash -; \
+    apt-get update && apt-get install --no-install-recommends -y nodejs yarn build-essential git; \
+    gem install rails bundler;
+
+WORKDIR $INSTALL_PATH
 
 # 3a: Install shoreman
 ADD https://github.com/chrismytton/shoreman/raw/master/shoreman.sh /usr/bin/shoreman
@@ -44,36 +43,25 @@ RUN cd /tmp; \
 ADD https://api.github.com/repos/zwagoth/e621ng/git/refs/heads/master /version.json
 RUN git clone https://github.com/zwagoth/e621ng.git /app
 
-# 5: Install bundler stuff
-RUN bundle install
-RUN bundle check
+# 5: Install bundler and yarn stuff
+RUN bundle install && bundle check && yarn install
 
-# 6: Install yarn stuff
-RUN yarn install
+# 6: Apply source patches
+COPY migration_patch.diff disable_ssl.diff uploader_accept_0_tags.diff /app/migrations/
+RUN git apply /app/migrations/*.diff
 
-# Apply db migration fixes
-COPY migration_patch.diff /app/migration_patch.diff
-RUN git apply migration_patch.diff
-COPY disable_ssl.diff /app/disable_ssl.diff
-RUN git apply disable_ssl.diff
-
-# Disable uploader limitations
-COPY uploader_accept_0_tags.diff /app/uploader_accept_0_tags.diff
-RUN git apply uploader_accept_0_tags.diff
-
-# 7: sed config to db
-RUN sed -s "s/url: <%= .* %>/host: $DB_URL/g" script/install/database.yml.templ > config/database.yml
-# 7a: sed redis
-RUN sed -i "s/url: <%= .* %>/url: $REDIS_URL/g" config/cable.yml
+# 7: sed db and redis url
+RUN sed -s "s/url: <%= .* %>/host: $DB_URL/g" script/install/database.yml.templ > config/database.yml; \
+    sed -i "s/url: <%= .* %>/url: $REDIS_URL/g" config/cable.yml
 
 # 8: CP config template
 RUN cp script/install/danbooru_local_config.rb.templ config/danbooru_local_config.rb
 
 # 9: Set up token + key
-RUN mkdir -p ~/.danbooru
-RUN echo $SECRET_TOKEN > ~/.danbooru/secret_token
-RUN echo $SECRET_KEY > ~/.danbooru/session_secret_key
-RUN chmod -R 600 ~/.danbooru
+RUN mkdir -p ~/.danbooru; \
+    echo $SECRET_TOKEN > ~/.danbooru/secret_token; \
+    echo $SECRET_KEY > ~/.danbooru/session_secret_key; \
+    chmod -R 600 ~/.danbooru;
 
 # 10: Webpack compile
 RUN rails assets:precompile
