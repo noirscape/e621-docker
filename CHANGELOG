@@ -1,6 +1,7 @@
 Changelog is sorted by date. Most recent changes are up top.
 
 [5/5/2020]
+* Updated extra required tag region in patch
 * Reduced steps in dockerfile from 42 to 28
 * Added patch to lower the amount of required tags in the uploader.
 * Initial publication of dockerfile.

@@ -1,7 +1,16 @@
 diff --git a/app/javascript/src/javascripts/uploader.vue b/app/javascript/src/javascripts/uploader.vue
-index 4864a3faa..8f755a835 100644
+index 4864a3faa..848303838 100644
 --- a/app/javascript/src/javascripts/uploader.vue
 +++ b/app/javascript/src/javascripts/uploader.vue
+@@ -187,7 +187,7 @@
+                              referrerpolicy="no-referrer"/>
+                     </div>
+                     <div class="box-section sect_red" v-show="showErrors && notEnoughTags">
+-                        You must provide at least <b>{{4 - tagCount}}</b> more tags. Tags in other sections count
++                        You must provide at least <b>{{0 - tagCount}}</b> more tags. Tags in other sections count
+                         towards this total.
+                     </div>
+                     <div v-show="!preview.show">
 @@ -803,7 +803,7 @@
          }).length;
        },
