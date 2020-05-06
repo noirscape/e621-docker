@@ -8,4 +8,5 @@ if [ ! -f /app/public/data/ran_setup.txt ]; then
     touch /app/public/data/ran_setup.txt
 fi
 
+rm -rf /app/tmp/pids/*
 /usr/bin/shoreman

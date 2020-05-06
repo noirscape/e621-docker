@@ -12,6 +12,7 @@ services:
         DANBOORU_REDIS_URL: "redis://redis:6379"
         REDIS_URL: "redis://redis:6379"
         WAIT_HOSTS: sql:5432, es:9200, memcached:11211, redis:6379
+        WAIT_HOSTS_TIMEOUT: 180
     depends_on:
         - sql
         - es

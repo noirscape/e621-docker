@@ -1,5 +1,10 @@
 Changelog is sorted by date. Most recent changes are up top.
 
+[6/5/2020]
+
+* Increase default docker-compose-wait timeout to 180 seconds
+* Removing stray pids folder on startup (fixes remnants of previous process preventing unicorn from starting)
+
 [5/5/2020]
 * Updated extra required tag region in patch
 * Reduced steps in dockerfile from 42 to 28
