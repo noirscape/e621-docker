@@ -35,6 +35,8 @@ server {
     proxy_redirect off;
     proxy_set_header Host $host:$server_port;
     proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header HTTP_CLIENT_IP $remote_addr;
+    proxy_set_header CLIENT_IP $remote_addr;
   }
 
   location / {

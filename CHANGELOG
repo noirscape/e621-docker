@@ -1,5 +1,9 @@
 Changelog is sorted by date. Most recent changes are up top.
 
+[26/5/2020]
+* Add ffmpeg to docker install process
+* Add dependencies for ffmpeg/libvips to docker install process
+
 [6/5/2020]
 
 * Fix seeding of database, removed need for migration patchs
