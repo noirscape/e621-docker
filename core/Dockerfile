@@ -48,7 +48,7 @@ RUN git clone https://github.com/zwagoth/e621ng.git /app
 RUN bundle install && bundle check && yarn install
 
 # 6: Apply source patches
-COPY disable_ssl.diff uploader_accept_0_tags.diff /app/migrations/
+COPY disable_ssl.diff uploader_accept_0_tags.diff artist-form-fix.diff /app/migrations/
 RUN git apply /app/migrations/*.diff
 
 # 7: sed db and redis url

@@ -1,4 +1,6 @@
 Changelog is sorted by date. Most recent changes are up top.
+[13/6/2020]
+* Add artist form patch.
 
 [26/5/2020]
 * Add ffmpeg to docker install process

@@ -1,0 +1,29 @@
+diff --git a/app/views/artists/_form.html.erb b/app/views/artists/_form.html.erb
+index 3961a6b53..d64399e90 100644
+--- a/app/views/artists/_form.html.erb
++++ b/app/views/artists/_form.html.erb
+@@ -6,9 +6,6 @@
+   <% else %>
+     <p><%= @artist.name %></p>
+   <% end %>
+-  <% if CurrentUser.is_janitor? %>
+-    <%= f.input :linked_user_id, label: "Linked User ID" %>
+-  <% end %>
+   <%= f.input :other_names_string, label: "Other names", as: :text, hint: '<b style="color: red;">NEW</b> Separate names with spaces, not commas. Use underscores for spaces inside names. Limit 25.'.html_safe %>
+   <%= f.input :group_name %>
+   <%= f.input :url_string, :label => "URLs", :as => :text, :input_html => {:size => "50x5", :value => params.dig(:artist, :url_string) || @artist.urls.join("\n")}, :hint => "You can prefix a URL with - to mark it as dead." %>
+diff --git a/app/views/artists/_summary.html.erb b/app/views/artists/_summary.html.erb
+index 5e1f969d4..175fc03e7 100644
+--- a/app/views/artists/_summary.html.erb
++++ b/app/views/artists/_summary.html.erb
+@@ -2,10 +2,6 @@
+ <ul>
+   <li><strong>Status</strong> <%= artist.status %></li>
+ 
+-  <% if artist.linked_user_id && artist.linked_user %>
+-    <li><strong>User</strong> <%= link_to_user(artist.linked_user) %></li>
+-  <% end %>
+-
+   <% if !artist.is_banned? || CurrentUser.is_member? %>
+     <% if artist.other_names.present? %>
+       <li><strong>Other Names</strong> <%= link_to_artists(artist.other_names) %></li>
