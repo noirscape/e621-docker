@@ -1,0 +1,35 @@
+
+
+div.paginator {
+  display: block;
+  padding: 2em 0 1em 0;
+  text-align: center;
+  clear: both;
+
+  li {
+    a {
+      margin: 0 0.25em;
+      padding: 0.25em 0.75em;
+    }
+
+    &.more {
+      color: $paginator-more-color;
+    }
+
+    a.arrow:hover {
+      background: $paginator-arrow-hover-background;
+      color: $paginator-arrow-hover-color;
+    }
+
+    a:hover {
+      background: $paginator-hover-background;
+      color: $paginator-hover-color;
+    }
+
+    span {
+      margin: 0 0.25em;
+      padding: 0.25em 0.75em;
+      font-weight: bold;
+    }
+  }
+}

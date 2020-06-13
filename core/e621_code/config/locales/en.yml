@@ -1,0 +1,39 @@
+# Sample localization file for English. Add more files in this directory for other locales.
+# See https://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
+
+en:
+  hello: "Hello world"
+  activerecord:
+    attributes:
+      artist_url:
+        url: ""
+      forum_post_vote:
+        creator_id: "Your vote"
+      post:
+        approver: "You"
+        approver_id: "You"
+        updater_id: "You"
+      post_flag:
+        creator: "You"
+        creator_id: "You"
+      post_vote:
+        user: "You"
+        user_id: "You"
+      post_appeal:
+        creator: "You"
+        creator_id: "You"
+      post_disapproval:
+        post: "You"
+        post_id: "You"
+      comment:
+        post: "You"
+        post_id: "You"
+      comment_vote:
+        comment: "You"
+        user_id: "You"
+      upload:
+        uploader: "You"
+        uploader_id: "You"
+      user_feedback:
+        creator: "You"
+        creator_id: "You"

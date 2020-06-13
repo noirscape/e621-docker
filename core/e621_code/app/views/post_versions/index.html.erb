@@ -1,0 +1,46 @@
+<div id="c-post-versions">
+  <div id="a-index">
+    <%= render "search" %>
+
+    <h1>Changes</h1>
+
+    <p>Recent updates may not have been processed yet. The most recently processed version was <%= time_ago_in_words_tagged(PostArchive.maximum(:updated_at) || 0) %>.</p>
+
+    <% if CurrentUser.is_admin? %>
+      <div class="inline-form">
+        <div class="input">
+          <label>Tag Script</label>
+          <input id="update-tag-script" placeholder="tag script to apply here"/>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @post_versions.length == 0 %>
+      <%= render "posts/blank" %>
+    <% else %>
+    <%= render "listing" %>
+
+
+      <% if params[:lr] && CurrentUser.is_moderator? %>
+        <p><%= link_to "Revert this user's changes", new_user_revert_path(:user_id => params[:lr]) %></p>
+      <% end %>
+
+      <%= numbered_paginator(@post_versions) %>
+    <% end %>
+  </div>
+</div>
+
+<%= javascript_tag nonce: true do -%>
+  $(".closebutton").on('click', function(e) {
+    $(e.target.parentNode).hide();
+  });
+  $(".desc-show").on('click', function(e) {
+    $(e.target).next().toggle();
+  });
+<% end -%>
+
+<%= render "secondary_links" %>
+
+<% content_for(:page_title) do %>
+  Post Changes - <%= Danbooru.config.app_name %>
+<% end %>

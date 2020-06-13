@@ -1,0 +1,55 @@
+
+
+div#news {
+  max-height: 1rem;
+  overflow-y: hidden;
+  user-select: none;
+
+  &:hover {
+    cursor: pointer;
+  }
+
+  &.open {
+    max-height: none;
+  }
+
+  .newsbody {
+    margin-top: 5px;
+  }
+
+  .closebutton {
+    float: right;
+    cursor: pointer;
+    margin-right: 10px;
+    font-size: 14pt;
+    font-weight: bold;
+    color: white;
+    vertical-align: center;
+    margin-top: -3px;
+  }
+}
+
+div#news-updates {
+  padding: 5px;
+  background: $news-background;
+  border-bottom: 2px solid $news-border;
+  overflow: hidden;
+  font-size: 0.8em;
+
+  ul {
+    float: left;
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    list-style-type: none;
+    float: left;
+    margin: 0 2em 0 0;
+    padding: 0;
+  }
+
+  a#close-news-ticker-link {
+    float: right;
+  }
+}

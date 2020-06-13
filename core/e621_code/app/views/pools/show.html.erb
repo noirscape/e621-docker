@@ -1,0 +1,35 @@
+<div id="c-pools">
+  <div id="a-show">
+    <h2>
+      <%= @pool.pretty_category %>:
+      <%= link_to @pool.pretty_name, posts_path(:tags => "pool:#{@pool.id}"), :class => "pool-category-#{@pool.category}" %>
+      <% if @pool.is_deleted? %>
+        <span class="inactive">(deleted)</span>
+      <% end %>
+    </h2>
+
+    <div id="description" class="styled-dtext">
+      <%= format_text(@pool.description) %>
+    </div>
+
+    <%= render "posts/partials/common/inline_blacklist" %>
+
+    <div id="posts" class="user-disable-cropped-<%= Danbooru.config.enable_image_cropping && CurrentUser.user.disable_cropped_thumbnails? %>">
+      <div id="posts-container">
+        <%= @post_set.presenter.post_previews_html(self) %>
+      </div>
+
+      <%= numbered_paginator(@post_set) %>
+    </div>
+  </div>
+</div>
+
+<%= render "secondary_links" %>
+
+<% content_for(:page_title) do %>
+  Pool - <%= @pool.pretty_name %> - <%= Danbooru.config.app_name %>
+<% end %>
+
+<% content_for(:html_header) do %>
+  <meta name="description" content="<%= strip_dtext(@pool.description) %>">
+<% end %>

@@ -1,0 +1,98 @@
+
+
+.ui-widget {
+  font-family: $base_font_family;
+
+  input, select, textarea, button {
+    font-family: $base_font_family;
+  }
+}
+
+.ui-widget-content a {
+  color: $widget-link-color;
+}
+
+.ui-widget-content a:hover {
+  color: $widget-link-hover-color;
+}
+
+div.ui-dialog {
+  height: auto;
+  overflow: visible;
+  font-size: 1em;
+  z-index: 999;
+  box-shadow: none;
+  padding: 0;
+
+  .ui-dialog-titlebar {
+    border-radius: 0;
+    border: none;
+  }
+
+  ul {
+    margin-left: 1em;
+    margin-bottom: 1em;
+  }
+}
+
+.ui-state-highlight {
+  @include themable {
+    background-color: themed('color-section');
+    color: themed('color-text');
+  }
+  border: 1px solid $widget-highlight-border;
+
+  a, a:link, a:active, a:visited {
+    @include themable {
+      color: themed('color-link');
+    }
+  }
+
+  a:hover {
+    @include themable {
+      color: themed('color-link-hover');
+    }
+  }
+}
+
+.ui-state-error {
+  border: 1px solid $widget-error-border;
+  background: $widget-error-background;
+}
+
+.ui-button {
+  margin: 0;
+  padding: 0.25em 1em;
+  color: $widget-button-color;
+  border: 1px solid $widget-button-border;
+  background-color: $widget-button-background;
+
+  &.sub {
+    font-size: 90%;
+  }
+
+  &.tiny {
+    font-size: 90%;
+    padding: 0.25em 0.5em;
+  }
+}
+
+.ui-button:hover {
+  box-shadow: 1px 1px $widget-button-shadow;
+  background: $widget-button-hover-background;
+}
+
+.ui-front {
+  z-index: 1000;
+}
+
+.ui-widget-content {
+  border: 1px solid $widget-border;
+  background-color: $widget-background;
+  color: $widget-color;
+}
+
+.ui-widget-header {
+  background-color: $widget-header-background;
+  color: $widget-header-color;
+}

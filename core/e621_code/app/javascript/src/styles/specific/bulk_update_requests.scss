@@ -1,0 +1,11 @@
+
+
+#c-bulk-update-requests {
+  s.approved {
+    color: $bur-approved-color;
+  }
+
+  s.failed {
+    color: $bur-rejected-color;
+  }
+}

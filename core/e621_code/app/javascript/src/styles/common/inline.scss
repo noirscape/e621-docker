@@ -1,0 +1,36 @@
+
+
+span.error {
+  display: block;
+  font-weight: bold;
+  color: red;
+}
+
+span.link {
+  color: $inline-link-color;
+  cursor: pointer;
+}
+
+span.count {
+  color: $inline-count-color;
+  margin-left: 0.5em;
+}
+
+kbd.key {
+  background: $keyboard-key-background;
+  border: 1px solid $keyboard-key-border;
+  padding: 1px 6px;
+  color: $keyboard-key-color;
+/*  width: 1em;*/
+  text-align: center;
+  display: inline-block;
+  border-radius: $border-radius-half;
+}
+
+span.inactive {
+  color: $inline-inactive-color;
+}
+
+td a.last-page {
+  color: $inline-last-page-color;
+}

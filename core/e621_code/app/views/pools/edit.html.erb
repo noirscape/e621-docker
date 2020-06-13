@@ -1,0 +1,23 @@
+<div id="c-pools">
+  <div id="a-edit">
+    <%= simple_form_for(@pool) do |f| %>
+      <h2>Edit Pool: <%= @pool.pretty_name %></h2>
+
+      <%= error_messages_for "pool" %>
+
+      <%= f.input :name, :as => :string, :input_html => { :value => @pool.pretty_name } %>
+      <%= dtext_field "pool", "description" %>
+      <%= dtext_preview_button "pool", "description" %>
+      <%= f.input :post_ids_string, as: :text, label: "Posts" %>
+      <%= f.input :category, :collection => ["series", "collection"], :include_blank => false %>
+      <%= f.input :is_active %>
+      <%= f.button :submit %>
+    <% end %>
+  </div>
+</div>
+
+<%= render "secondary_links" %>
+
+<% content_for(:page_title) do %>
+  Edit Pool - <%= Danbooru.config.app_name %>
+<% end %>

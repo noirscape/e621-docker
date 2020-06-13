@@ -1,0 +1,23 @@
+<div id="c-wiki-page-versions">
+  <div id="a-index">
+    <%= render "wiki_pages/sidebar" %>
+
+    <section id="content">
+      <h1>Wiki Pages</h1>
+
+      <% if params.dig(:search, :wiki_page_id).present? %>
+        <%= render "page_listing" %>
+      <% else %>
+        <%= render "global_listing" %>
+      <% end %>
+
+      <%= numbered_paginator(@wiki_page_versions) %>
+    </section>
+  </div>
+</div>
+
+<%= render "wiki_pages/secondary_links" %>
+
+<% content_for(:page_title) do %>
+  Wiki Page Versions - <%= Danbooru.config.app_name %>
+<% end %>

@@ -1,0 +1,240 @@
+<div id="c-posts">
+  <div id="a-show">
+    <aside id="sidebar">
+      <%= render "posts/partials/common/search", :path => posts_path, :tags => params[:q], :tags_dom_id => "tags" %>
+
+      <%= render "posts/partials/index/blacklist" %>
+
+      <section id="tag-list">
+        <!-- TODO: Lock off these extra items? -->
+        <%= @post.presenter.split_tag_list_html(current_query: params[:q], show_extra_links: true) %>
+      </section>
+
+      <section id="post-information">
+        <h1>Information</h1>
+        <%= render "posts/partials/show/information", :post => @post %>
+      </section>
+
+      <section id="post-options">
+        <h1>Options</h1>
+        <%= render "posts/partials/show/options", :post => @post %>
+      </section>
+
+      <% if CurrentUser.is_member? %>
+        <section id="post-history">
+          <h1>History</h1>
+          <ul>
+            <li><%= fast_link_to "Tags/Desc", post_versions_path(:search => {:post_id => @post.id}) %></li>
+            <li><%= fast_link_to "Notes", note_versions_path(:search => {:post_id => @post.id}) %></li>
+            <li><%= fast_link_to "Moderation", post_events_path(@post.id) %></li>
+            <li><%= fast_link_to "Replacements", post_replacements_path(:search => {:post_id => @post.id}) %></li>
+          </ul>
+        </section>
+
+      <% end %>
+
+      <% if @post.visible? && @post.is_image? %>
+        <section id="post-related-images">
+          <h1>Related</h1>
+          <ul>
+            <li><%= link_to "Sets with this post", post_sets_path(post_id: @post.id), rel: "nofollow" %></li>
+            <li><%= link_to "Visually similar on E6", iqdb_queries_path(post_id: @post.id), rel: "nofollow" %></li>
+            <li><a rel="nofollow" href="https://www.google.com/searchbyimage?image_url=<%= @post.preview_file_url %>">Reverse Google Search</a></li>
+            <li><a rel="nofollow" href="https://saucenao.com/search.php?url=<%= @post.preview_file_url %>">Reverse SauceNAO Search</a></li>
+            <li><a rel="nofollow" href="https://inkbunny.net/search_process.php?text=<%= @post.md5 %>&md5=yes">Inkbunny MD5 Search</a></li>
+            <li><a rel="nofollow" href="https://derpibooru.org/search/reverse?url=<%= @post.preview_file_url %>">Reverse Derpibooru Search</a></li>
+            <li><a rel="nofollow" href="https://kheina.com/?url=<%= @post.preview_file_url %>">Reverse Kheina Search</a></li>
+          </ul>
+        </section>
+      <% end %>
+
+    </aside>
+
+    <section id="content">
+      <div id="image-and-nav">
+        <% if @post.presenter.has_nav_links?(self) %>
+          <%= render "posts/partials/show/nav_links", :post => @post, :position => "bottom" %>
+        <% end %>
+
+        <div id="post-notices-top">
+          <div class="notice notice-no-shortcuts" style="display: none;" id="flash-shortcut-notice">
+            Keyboard shortcuts are disabled on this page because it contains flash.
+          </div>
+          <%= render "posts/partials/show/notices", :post => @post %>
+        </div>
+
+        <%= render "ads/leaderboard" %>
+
+        <%= content_tag(:section, { id: "image-container" }.merge(PostPresenter.data_attributes(@post))) do -%>
+          <div id="note-container"></div>
+          <div id="note-preview"></div>
+          <%= render "posts/partials/show/embedded", post: @post %>
+        <% end -%>
+
+        <% if @post.visible? && @post.has_large? && !@post.is_ugoira? && !@post.is_video? %>
+          <div class="ui-corner-all ui-state-highlight notice notice-resized" id="image-resize-notice" style="<%= CurrentUser.default_image_size != "large" ? "display: none;" : "" %>">
+            <span>Viewing sample resized to <%= number_to_percentage @post.resize_percentage.floor, :precision => 0 %> of original (<%= link_to "view original", @post.tagged_file_url, :id => "image-resize-link" %>)</span>
+            <span style="display: none;">Loading...</span>
+          </div>
+        <% end %>
+      </div>
+
+      <section id="image-extra-controls" style="display: flex;">
+
+        <% if CurrentUser.is_member? %>
+          <div class="image-vote-buttons">
+            <%= post_vote_block(@post, @post.own_vote, buttons: true) %>
+          </div>
+          <%= content_tag(:div, class: "fav-buttons fav-buttons-#{@post.is_favorited?}") do %>
+            <%= button_tag "+Favorite", id: 'add-fav-button', class: "button btn-success", "data-disable-with": tag.i(class: "fas fa-spinner fa-spin"), 'data-pid': @post.id %>
+            <%= button_tag "-Favorite", id: 'remove-fav-button', class: "button btn-danger", "data-disable-with": tag.i(class: "fas fa-spinner fa-spin"), 'data-pid': @post.id %>
+          <% end %>
+        <% end %>
+        <% if @post.visible? %>
+          <div id="image-download-link">
+            <%= link_to "Download", @post.file_url, class: "button btn-warn" %>
+          </div>
+        <% end %>
+        <% if !@post.force_original_size?(params[:original]) %>
+          <div id="image-resize-cycle">
+            | <a id="current-image-resize-mode" href="javascript:void(0)" style="cursor: pointer;" data-samples="<%= @post.allow_sample_resize? %>">Change Size Mode ()</a>
+          </div>
+        <% end %>
+      </section>
+
+      <%= render "posts/partials/show/notices_bottom", :post => @post %>
+
+      <section id="mark-as-translated-section" style="display: none;">
+        <%= form_tag(mark_as_translated_post_path(@post), :class => "simple_form", :method => :put) do |f| %>
+          <%= hidden_field_tag :tags_query, params[:q] %>
+          <%= hidden_field_tag :pool_id, params[:pool_id] %>
+
+          <fieldset>
+            <label for="post_check_translation">
+              <%= check_box "post", "check_translation", :checked => @post.has_tag?("check_translation") %>
+              Check translation
+            </label>
+
+            <label for="post_partially_translated">
+              <%= check_box "post", "partially_translated", :checked => @post.has_tag?("partially_translated") %>
+              Partially translated
+            </label>
+          </fieldset>
+
+          <div class="input">
+            <%= submit_tag "Mark as translated" %>
+          </div>
+        <% end %>
+      </section>
+
+      <% if @post.description.present? %>
+        <div id="post-description-container" class="styled-dtext">
+          <div id="artist-commentary" class="expandable <%= 'expanded' unless CurrentUser.description_collapsed_initially? %>">
+            <div class="expandable-header">
+              <span class="section-arrow"></span>
+              <span>Description</span>
+            </div>
+            <div class="expandable-content styled-dtext original-artist-commentary">
+              <%= format_text(@post.description, max_thumbs: 0) %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <menu id="post-sections">
+        <% unless CurrentUser.hide_comments? %>
+          <li class="active"><a href="#comments">Comments</a></li>
+        <% end %>
+        <% if CurrentUser.is_member? && @post.visible? %>
+          <li><a href="#edit" id="post-edit-link" data-shortcut="e">Edit</a></li>
+        <% end %>
+      </menu>
+
+      <% unless CurrentUser.hide_comments? %>
+        <section id="comments">
+          <%= render "comments/partials/index/list", :comments => @post.comments.visible(CurrentUser.user), :post => @post, :show_header => false %>
+        </section>
+      <% end %>
+
+      <section id="notes" style="display: none;">
+        <% if @post.has_notes? %>
+          <% cache("p/#{@post.id}/n/#{@post.last_noted_at.to_i}") do %>
+            <%= render :partial => "notes/note", :collection => @post.notes.active %>
+          <% end %>
+        <% end %>
+      </section>
+
+      <% if CurrentUser.is_member? && @post.visible? %>
+        <section id="edit" style="display: none;">
+          <%= render "posts/partials/show/edit", :post => @post %>
+        </section>
+      <% end %>
+    </section>
+  </div>
+
+  <% if CurrentUser.is_member? %>
+    <div id="add-to-pool-dialog" title="Add to pool" style="display: none;">
+      <%= render "pool_elements/new" %>
+    </div>
+    <div id="add-to-set-dialog" title="Add to set" style="display: none;">
+      <%= render "post_sets/add_dialog" %>
+    </div>
+    <%= javascript_tag nonce: true do -%>
+      var uploaderSettings = {
+        postTags: <%= (@post.presenter.split_tag_list_text + " ").to_json.html_safe %>,
+        uploadTags: <%= CurrentUser.presenter.favorite_tags_with_types.to_json.html_safe %>,
+        recentTags: <%= CurrentUser.presenter.recent_tags_with_types.to_json.html_safe %>
+      };
+      <% end -%>
+  <% end %>
+  <% if @fixup_post_url %>
+    <%= javascript_tag nonce: true do -%>
+      // This just fixes up the history path for this page so you don't end up getting the wrong url when navigating.
+      history.replaceState({}, "", <%= post_path(@post, q: params[:q]).to_json.html_safe %>);
+    <% end -%>
+  <% end %>
+</div>
+
+<% content_for(:page_title) do %>
+  #<%= @post.id %> - <%= Danbooru.config.app_name %>
+<% end %>
+
+<% content_for(:html_header) do %>
+  <% if @post.hide_from_search_engines? %><meta name="robots" content="noindex" /><% end %>
+  <% if @post.force_original_size?(params[:original]) %><meta name="image-override-size" content="original"/><% end %>
+  <meta name="default-image-size" content="<%= @post.presenter.default_image_size(CurrentUser.user, params[:original]) %>"/>
+
+  <%= tag.meta name: "description", content: "View this #{@post.image_width}x#{@post.image_height} #{number_to_human_size(@post.file_size)} image" %>
+  <meta name="post-id" content="<%= @post.id %>">
+  <meta name="post-has-embedded-notes" content="<%= @post.has_embedded_notes? %>">
+  <%= tag.meta name: "og:title", content: "#{@post.presenter.humanized_essential_tag_string} - #{Danbooru.config.app_name}" %>
+
+  <% if @post.visible? %>
+    <%= tag.meta name: "og:image", content: @post.open_graph_image_url %>
+  <% end %>
+
+  <%= tag.meta name: "canonical", content: post_url(@post, host: Danbooru.config.hostname, protocol: "https") %>
+
+  <%# Twitter properties %>
+  <% if @post.twitter_card_supported? %>
+    <meta name="twitter:card" content="summary_large_image">
+    <%= tag.meta name: "twitter:site", content: Danbooru.config.twitter_site %>
+    <%= tag.meta name: "twitter:title", content: "#{@post.presenter.humanized_essential_tag_string} - #{Danbooru.config.app_name}" %>
+    <%= tag.meta name: "twitter:description", content: "View this #{@post.image_width}x#{@post.image_height} #{number_to_human_size(@post.file_size)} image" %>
+
+    <% if @post.visible? %>
+      <%= tag.meta name: "twitter:image", content: @post.open_graph_image_url %>
+    <% end %>
+  <% end %>
+
+  <% if @post.rating == "e" %>
+    <meta name="rating" content="adult">
+  <% end %>
+
+  <%= tag.meta name: "og:type", content: "website" %>
+  <%= tag.meta name: "og:site", content: Danbooru.config.app_name %>
+
+  <%= auto_discovery_link_tag(:atom, comments_url(:atom, search: { post_id: @post.id }), title: "Comments for post ##{@post.id}") %>
+<% end %>
+
+<%= render "posts/partials/common/secondary_links" %>

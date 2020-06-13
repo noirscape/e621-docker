@@ -1,0 +1,62 @@
+<div id="c-users">
+  <div id="a-index">
+    <h1>Users</h1>
+
+    <% form_tag(users_path, :method => :get, :class => "simple_form") do %>
+      <%= search_field "name_matches", :label => "Name" %>
+      <%= submit_tag "Search" %>
+    <% end %>
+
+    <table width="100%" class="striped">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Name</th>
+          <th>Posts</th>
+          <th>Deleted</th>
+          <% if CurrentUser.is_moderator? %>
+            <th>Email</th>
+            <th>Last IP</th>
+          <% end %>
+          <th>Notes</th>
+          <th>Edits</th>
+          <th>Level</th>
+          <th>Joined</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @users.each do |user| %>
+          <tr>
+            <td>
+              <% if CurrentUser.is_admin? %>
+                <%= link_to "Edit", edit_admin_user_path(user) %>
+              <% end %>
+            </td>
+            <td>
+              <%= link_to_user user %>
+            </td>
+            <td><%= link_to user.posts.count, posts_path(:tags => "user:#{user.name}") %></td>
+            <td><%= user.posts.deleted.count %></td>
+            <% if CurrentUser.is_moderator? %>
+              <td><%= user.email %></td>
+              <td><%= link_to_ip(user.last_ip_addr) %></td>
+            <% end %>
+            <td><%= link_to user.note_versions.count, note_versions_path(:search => {:updater_id => user.id}) %></td>
+            <td><%= link_to user.post_update_count, post_versions_path(:search => {:updater_id => user.id}) %></td>
+            <td><%= "(Unactivated)" unless user.is_verified? %> <%= user.level_string %></td>
+            <td><%= compact_time user.created_at %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <%= numbered_paginator(@users) %>
+
+  </div>
+</div>
+
+<%= render "secondary_links" %>
+
+<% content_for(:page_title) do %>
+  Users - <%= Danbooru.config.app_name %>
+<% end %>

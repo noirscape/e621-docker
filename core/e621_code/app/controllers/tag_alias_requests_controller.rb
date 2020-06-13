@@ -1,0 +1,27 @@
+class TagAliasRequestsController < ApplicationController
+  before_action :member_only
+
+  def new
+  end
+
+  def create
+    @tag_alias_request = TagAliasRequest.new(tar_params)
+    @tag_alias_request.create
+
+    if @tag_alias_request.invalid?
+      render :action => "new"
+    elsif @tag_alias_request.forum_topic
+      redirect_to forum_topic_path(@tag_alias_request.forum_topic)
+    else
+      redirect_to tag_alias_path(@tag_alias_request.tag_alias)
+    end
+  end
+
+private
+
+  def tar_params
+    permitted = %i{antecedent_name consequent_name reason}
+    permitted += [:skip_secondary_validations, :skip_forum] if CurrentUser.is_moderator?
+    params.require(:tag_alias_request).permit(permitted)
+  end
+end

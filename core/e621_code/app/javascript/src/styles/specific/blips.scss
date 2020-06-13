@@ -1,0 +1,22 @@
+
+
+div#c-blips {
+  article.blip {
+    margin-bottom: $base-padding;
+    word-wrap: break-word;
+
+    &[data-is-deleted="true"] {
+      background-color: $blip-hidden-background;
+    }
+  }
+}
+
+
+form.edit_blip div.input.boolean {
+  display: inline-block;
+
+  label {
+    font-weight: normal;
+    vertical-align: initial;
+  }
+}
