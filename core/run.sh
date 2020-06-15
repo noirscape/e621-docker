@@ -10,5 +10,11 @@ if [ ! -f /app/public/data/ran_setup.txt ]; then
     touch /app/public/data/ran_setup.txt
 fi
 
+echo "Updating secret key in container"
+echo $SECRET_KEY > ~/.danbooru/session_secret_key
+echo "Updating secret token in container"
+echo $SECRET_TOKEN > ~/.danbooru/secret_token
+chmod -R 600 ~/.danbooru;
+
 rm -rf /app/tmp/pids/*
 /usr/bin/shoreman

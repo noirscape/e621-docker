@@ -66,9 +66,3 @@ Pull Requests for these are welcome.
 * Build script that takes care of creating data folder in the right way and sets up the env file.
 * Finding a way to keep a version of the E621 source code that works in the repository, rather than cloning the latest each time in the container.
 
-## Not TODO
-
-Pull Requests for these are not welcome.
-
-* DockerHub builds.
-* Build script that builds the containers for you.

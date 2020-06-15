@@ -8,9 +8,10 @@ ENV VIPS_VERSION 8.8.3
 ENV INSTALL_PATH /app
 ENV DB_URL sql
 ENV REDIS_URL redis:6379
-ENV SECRET_TOKEN 09fcf6c0075f2a331b807108f8a4a1bb6911ea168bb0407f4947372f1bcf7c5e # CHANGE THIS
-ENV SECRET_KEY 09fcf6c0075f2a331b807108f8a4a1bb6911ea168bb0407f4947372f1bcf7c5e # CHANGE THIS
 ENV RAILS_ENV=production
+
+ENV SECRET_TOKEN 09fcf6c0075f2a331b807108f8a4a1bb6911ea168bb0407f4947372f1bcf7c5e
+ENV SECRET_KEY 09fcf6c0075f2a331b807108f8a4a1bb6911ea168bb0407f4947372f1bcf7c5e
 
 RUN mkdir -p $INSTALL_PATH
 
@@ -25,8 +26,7 @@ RUN wget -qO - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -; \
 WORKDIR $INSTALL_PATH
 
 # 3a: Install shoreman
-ADD https://github.com/chrismytton/shoreman/raw/master/shoreman.sh /usr/bin/shoreman
-RUN chmod +x /usr/bin/shoreman
+COPY shoreman.sh /usr/bin/shoreman
 
 # 3b: Install libvips
 RUN cd /tmp; \
@@ -39,10 +39,8 @@ RUN cd /tmp; \
     cd $INSTALL_PATH; \
     rm -fr /tmp/vips-$VIPS_VERSION.tar.gz /tmp/vips-$VIPS_VERSION;
 
-# 4: Clone e621 to app folder
-# 4a: Cache invalidator
-ADD https://api.github.com/repos/zwagoth/e621ng/git/refs/heads/master /version.json
-RUN git clone https://github.com/zwagoth/e621ng.git /app
+# 4: Copy functional e621 to app folder
+COPY e621_code /app
 
 # 5: Install bundler and yarn stuff
 RUN bundle install && bundle check && yarn install
@@ -68,10 +66,8 @@ RUN mkdir -p ~/.danbooru; \
 RUN rails assets:precompile
 
 # 11: Set up wait
-ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.7.3/wait /wait
-RUN chmod +x /wait
+COPY wait /wait
 
 # 12: Run startup script
 COPY run.sh /run.sh
-RUN chmod +x /run.sh
 CMD /wait && /run.sh

@@ -3,9 +3,9 @@ services:
   core:
     build: core
     environment:
+        SECRET_TOKEN: ${SECRET_TOKEN}
+        SESSION_SECRET_KEY: ${SECRET_KEY}
         DATABASE_URL: "postgresql://sql/danbooru2"
-        SECRET_TOKEN: 
-        SESSION_SECRET_KEY:
         DANBOORU_ELASTICSEARCH_HOST: es
         DANBOORU_SSL_OPTIONS: "{}"
         DANBOORU_MEMCACHED_SERVERS: memcached:11211

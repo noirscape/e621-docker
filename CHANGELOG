@@ -1,4 +1,9 @@
 Changelog is sorted by date. Most recent changes are up top.
+[15/6/2020]
+* Localize a ton of stuff (incl. e621 source code)
+* Dockerhub builds
+* Introduce new variables for secret key and token.
+
 [13/6/2020]
 * Add artist form patch.
 
