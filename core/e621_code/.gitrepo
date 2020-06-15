@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/zwagoth/e621ng.git
 	branch = master
-	commit = 28606dc2e650aeeb04eb197f133b0fec79deec6a
+	commit = 9b7a081767b4328a4e4244fac8fee31f4ff186ba
 	parent = ab3995949c4c8e531cd74948dd9118c27f4d40ae
 	method = merge
 	update = auto
