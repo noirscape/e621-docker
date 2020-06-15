@@ -1,2 +1,2 @@
 core/e621_code/* linguist-vendored
-core/test_parser/* linguist-vendored
+sql/test_parser/* linguist-vendored
