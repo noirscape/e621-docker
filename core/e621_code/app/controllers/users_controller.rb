@@ -1,7 +1,6 @@
 class UsersController < ApplicationController
   respond_to :html, :json
   skip_before_action :api_check
-  before_action :logged_in_only, only: [:edit, :upload_limit, :update]
   before_action :member_only, only: [:custom_style, :upload_limit]
 
   def new
@@ -12,7 +11,7 @@ class UsersController < ApplicationController
   end
 
   def edit
-    @user = User.find(CurrentUser.id)
+    @user = User.find(params[:id])
     check_privilege(@user)
     respond_with(@user)
   end
@@ -90,7 +89,7 @@ class UsersController < ApplicationController
   end
 
   def update
-    @user = User.find(CurrentUser.id)
+    @user = User.find(params[:id])
     check_privilege(@user)
     @user.update(user_params(:update))
     if @user.errors.any?
