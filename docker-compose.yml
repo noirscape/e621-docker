@@ -1,6 +1,7 @@
 version: '3'
 services:
   core:
+    image: noirscape/e621:core
     build: core
     environment:
         SECRET_TOKEN: ${SECRET_TOKEN}
@@ -36,6 +37,7 @@ services:
         soft: 65536
         hard: 65536
   sql:
+    image: noirscape/e621:sql
     build: sql
     restart: unless-stopped
     environment:
@@ -51,6 +53,7 @@ services:
      image: memcached:1-alpine
 
   frontend:
+    image: noirscape/e621:frontend
     build: frontend
     depends_on:
         - core

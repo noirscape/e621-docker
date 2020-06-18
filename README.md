@@ -21,9 +21,7 @@ These are docker images that allow you to deploy an instance of E621 with... rel
 
 ### Updating
 
-To update the redis, memcached and elasticsearch containers, run `docker-compose pull`. To update the core, postgres and frontend containers, check below.
-
-1. Run `docker-compose build --pull --no-cache`. This regenerates the containers with the latest e621 source code, postgres version and nginx version.
+1. Run `docker-compose pull` to update the containers.
 2. Run `docker-compose run --rm core rake db:migrate` to run the database migrations.
 3. Run `docker-compose up` to bring up the images again.
 
@@ -48,6 +46,10 @@ The following values should _not_ be overriden by the local_config file.
 * `memcached_servers`
 * `redis_url`
 
+## Maintainers
+
+* When updating the checked out e621 code, do a quick test build of the core. A mere `docker-compose build core --pull` should help identify any errors that might pop up.
+
 ## Credits
 
 * The lovely people from StackOverflow, ElasticSearch community forums and various Ruby on Rails support communities for providing the resources.
@@ -62,7 +64,5 @@ Pull Requests for these are welcome.
 * Optimize images
 * Reduce amount of stages. Especially in core.
 * Move compilation of libvips to it's own build stage.
-* Move secret_key and secret_token out of core and make them build arguments.
 * Build script that takes care of creating data folder in the right way and sets up the env file.
-* Finding a way to keep a version of the E621 source code that works in the repository, rather than cloning the latest each time in the container.
 
