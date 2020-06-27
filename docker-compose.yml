@@ -14,6 +14,7 @@ services:
         REDIS_URL: "redis://redis:6379"
         WAIT_HOSTS: sql:5432, es:9200, memcached:11211, redis:6379
         WAIT_HOSTS_TIMEOUT: 180
+        SKIP_CLOUDFLARE_CHECK: ${SKIP_CLOUDFLARE_CHECK}
     depends_on:
         - sql
         - es
