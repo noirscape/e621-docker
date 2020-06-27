@@ -1,4 +1,9 @@
 class PostSerializer < ActiveModel::Serializer
+  def nullable_to_truthy(v)
+    return false if v.nil?
+    v
+  end
+
   def tags
     tags = {}
     TagCategory.categories.each do |category|
@@ -60,9 +65,9 @@ class PostSerializer < ActiveModel::Serializer
     {
         pending: object.is_pending,
         flagged: object.is_flagged,
-        note_locked: object.is_note_locked,
-        status_locked: object.is_status_locked,
-        rating_locked: object.is_rating_locked,
+        note_locked: nullable_to_truthy(object.is_note_locked),
+        status_locked: nullable_to_truthy(object.is_status_locked),
+        rating_locked: nullable_to_truthy(object.is_rating_locked),
         deleted: object.is_deleted
     }
   end
@@ -92,7 +97,11 @@ class PostSerializer < ActiveModel::Serializer
     object.is_favorited?
   end
 
+  def has_notes
+    object.has_notes?
+  end
+
   attributes :id, :created_at, :updated_at, :file, :preview, :sample, :score, :tags, :locked_tags, :change_seq, :flags,
              :rating, :fav_count, :sources, :pools, :relationships, :approver_id, :uploader_id, :description,
-             :comment_count, :is_favorited
+             :comment_count, :is_favorited, :has_notes
 end
