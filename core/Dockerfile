@@ -39,11 +39,21 @@ RUN cd /tmp; \
     cd $INSTALL_PATH; \
     rm -fr /tmp/vips-$VIPS_VERSION.tar.gz /tmp/vips-$VIPS_VERSION;
 
+# 3c: Install broken gems (bundler doesn't like these)
+RUN gem install nokogumbo -v '2.0.2'
+
 # 4: Copy functional e621 to app folder
+# 4a: copy Gemfile + lock
+COPY e621_code/Gemfile /app/Gemfile
+COPY e621_code/Gemfile.lock /app/Gemfile.lock
+# 4b: Install gemfile
+RUN bundle install
+
+# Copy rest of the code
 COPY e621_code /app
 
 # 5: Install bundler and yarn stuff
-RUN bundle install && bundle check && yarn install
+RUN bundle check && yarn install
 
 # 6: Apply source patches
 COPY disable_ssl.diff uploader_accept_0_tags.diff artist-form-fix.diff /app/migrations/

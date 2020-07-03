@@ -49,6 +49,7 @@ The following values should _not_ be overriden by the local_config file.
 ## Maintainers
 
 * When updating the checked out e621 code, do a quick test build of the core. A mere `docker-compose build core --pull` should help identify any errors that might pop up.
+* Nokogumbo fails to build when installed using bundler for some reason. Manually installing it using `gem` works, but it's a workaround. When `sanitize` (the gem that wants nokogumbo) is updated, check to make sure that the build still works and optionally remove the workaround.
 
 ## Credits
 
