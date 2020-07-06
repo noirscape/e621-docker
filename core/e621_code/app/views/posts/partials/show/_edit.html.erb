@@ -72,20 +72,15 @@
     <div class="input" id="iqdb-similar" style="display: none;"></div>
   <% end %>
 
-  <% unless post.is_note_locked? %>
-    <div class="input">
-      <%= f.label :has_embedded_notes, "Embed notes" %>
-      <%= f.check_box :has_embedded_notes %>
-    </div>
-  <% end %>
-
-  <% if CurrentUser.is_janitor? %>
+  <% if CurrentUser.is_privileged? %>
     <div class="input">
       <%= f.label :blank, "Lock" %>
 
       <fieldset class="locks">
-        <%= f.check_box :is_note_locked %>
-        <%= f.label :is_note_locked, "Notes" %>
+        <% if CurrentUser.is_janitor? %>
+          <%= f.check_box :is_note_locked %>
+          <%= f.label :is_note_locked, "Notes" %>
+        <% end %>
 
         <%= f.check_box :is_rating_locked %>
         <%= f.label :is_rating_locked, "Rating" %>
@@ -96,7 +91,9 @@
         <% end %>
       </fieldset>
     </div>
+  <% end %>
 
+  <% if CurrentUser.is_janitor? %>
     <div class="input">
       <%= f.label :bg_color, "Background Color" %>
       <%= f.text_field :bg_color, :size => 6 %>
