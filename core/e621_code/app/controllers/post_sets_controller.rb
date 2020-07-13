@@ -108,8 +108,8 @@ class PostSetsController < ApplicationController
   end
 
   def for_select
-    owned = PostSet.owned(CurrentUser.user).order(:name)
-    maintained = PostSet.active_maintainer(CurrentUser.user).order(:name)
+    owned = PostSet.owned(CurrentUser.user)
+    maintained = PostSet.active_maintainer(CurrentUser.user)
 
     @for_select = {
         "Owned" => owned.map {|x| [x.name.tr("_", " ").truncate(35), x.id]},
