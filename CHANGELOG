@@ -1,4 +1,7 @@
 Changelog is sorted by date. Most recent changes are up top.
+[13/7/2020]
+* Disable SameSite cookie specifications (these cause issues with internal IP access since SS cookie stuff needs HTTPS, which you can't exactly get on an IP)
+
 [15/6/2020]
 * Localize a ton of stuff (incl. e621 source code)
 * Dockerhub builds

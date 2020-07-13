@@ -1,0 +1,36 @@
+diff --git a/app/logical/session_creator.rb b/app/logical/session_creator.rb
+index aa2194491..0a4456a59 100644
+--- a/app/logical/session_creator.rb
++++ b/app/logical/session_creator.rb
+@@ -20,7 +20,7 @@ class SessionCreator
+ 
+       if remember
+         verifier = ActiveSupport::MessageVerifier.new(Danbooru.config.remember_key, serializer: JSON, hash: "SHA256")
+-        cookies.encrypted[:remember] = {value: verifier.generate(user.id, purpose: "rbr", expires_in: 14.days), expires: Time.now + 14.days, httponly: true, same_site: :lax, secure: Rails.env.production?}
++        cookies.encrypted[:remember] = {value: verifier.generate(user.id, purpose: "rbr", expires_in: 14.days), expires: Time.now + 14.days, httponly: true}
+       end
+       return true
+     else
+diff --git a/app/logical/session_loader.rb b/app/logical/session_loader.rb
+index e5cc1fc79..9fcd44cc7 100644
+--- a/app/logical/session_loader.rb
++++ b/app/logical/session_loader.rb
+@@ -71,7 +71,7 @@ private
+ 
+   def refresh_old_remember_token
+     if cookies.encrypted[:remember]
+-      cookies.encrypted[:remember] = {value: @remember_validator.generate(CurrentUser.id, purpose: "rbr", expires_in: 14.days), expires: Time.now + 14.days, httponly: true, same_site: :lax, secure: Rails.env.production?}
++      cookies.encrypted[:remember] = {value: @remember_validator.generate(CurrentUser.id, purpose: "rbr", expires_in: 14.days), expires: Time.now + 14.days, httponly: true}
+     end
+   end
+ 
+diff --git a/config/initializers/session_store.rb b/config/initializers/session_store.rb
+index 0cdddcdf9..3c5e2ae4c 100644
+--- a/config/initializers/session_store.rb
++++ b/config/initializers/session_store.rb
+@@ -1,4 +1,4 @@
+ # Be sure to restart your server when you modify this file.
+ 
+-Rails.application.config.session_store :cookie_store, key: '_danbooru_session', same_site: :lax, secure: Rails.env.production?
++Rails.application.config.session_store :cookie_store, key: '_danbooru_session'
+ Rails.application.config.action_dispatch.cookies_same_site_protection = :lax

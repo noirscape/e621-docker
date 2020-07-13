@@ -33,9 +33,12 @@ These are docker images that allow you to deploy an instance of E621 with... rel
 
 * SSL disable patch: Disables the forced SSL that E621 normally has.
 * Uploader accepts 0 tags: This changes the JS uploader to not demand tags to be placed on an image.
-* `sed` in `core/cable.yml`: An inline patch to make E621 talk to the redis container server.
-* Hostname patch to make mock services use the frontend instead of failing.
 * Patch to artist forms to remove linked users from artists (it relies on missing table fields).
+* Session patch: Disables SameSite cookies, which are causing issues in SessionLoader.
+
+The following change is not a git diff file, but happens in the docker building process:
+
+* `sed` in `core/cable.yml`: An inline patch to make E621 talk to the redis container server.
 
 ## Things you can't change in local_config
 

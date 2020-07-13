@@ -56,8 +56,8 @@ COPY e621_code /app
 RUN bundle check && yarn install
 
 # 6: Apply source patches
-COPY disable_ssl.diff uploader_accept_0_tags.diff artist-form-fix.diff /app/migrations/
-RUN git apply /app/migrations/*.diff
+COPY patches/*.diff /app/patches/
+RUN git apply /app/patches/*.diff
 
 # 7: sed db and redis url
 RUN sed -s "s/url: <%= .* %>/host: $DB_URL/g" script/install/database.yml.templ > config/database.yml; \
