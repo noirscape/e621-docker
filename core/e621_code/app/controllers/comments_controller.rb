@@ -96,7 +96,6 @@ private
     respond_with(@comments) do |format|
       format.atom do
         @comments = @comments.includes(:post, :creator).load
-        @comments = @comments.select { |comment| comment.post.visible? }
       end
     end
   end

@@ -24,10 +24,6 @@ class BulkUpdateRequest < ApplicationRecord
   scope :old, -> {where("created_at between ? and ?", TagRelationship::EXPIRY.days.ago, TagRelationship::EXPIRY_WARNING.days.ago)}
 
   module SearchMethods
-    def for_creator(id)
-      where("user_id = ?", id)
-    end
-
     def default_order
       pending_first.order(id: :desc)
     end
