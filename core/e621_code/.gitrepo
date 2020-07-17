@@ -1,0 +1,13 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/zwagoth/e621ng.git
+	branch = master
+	commit = 5a4a71ee4e0fd8c0ef8244931b50392f92f8fb3d
+	parent = e608f72773ec0bb3b151491d2ec55b6babd0dc78
+	method = merge
+	update = auto
+	cmdver = 0.4.1

@@ -1,0 +1,43 @@
+<div id="c-dmails">
+  <div id="a-show">
+    <div class="dmail">
+      <h1>Show Message</h1>
+      <h2><%= @dmail.title %></h2>
+
+      <ul style="margin-bottom: 1em;">
+        <li><strong>Sender</strong>: <%= link_to_user @dmail.from %></li>
+        <li><strong>Recipient</strong>: <%= link_to_user @dmail.to %></li>
+        <li><strong>Date</strong>: <%= compact_time(@dmail.created_at) %></li>
+        <% if CurrentUser.user.is_moderator? %>
+          <li><strong>Sender IP</strong>: <%= link_to_ip @dmail.creator_ip_addr %></li>
+        <% end %>
+      </ul>
+
+      <h3>Body</h3>
+      <div class="styled-dtext">
+        <%= format_text(@dmail.body) %>
+
+        <% if @dmail.is_automated? %>
+          <p class="tn">
+            This is an automated message. Responses will not be seen. If you have any questions either message a moderator or ask in the forum.
+          </p>
+        <% end %>
+      </div>
+
+      <p>
+        <%= link_to "Respond", new_dmail_path(:respond_to_id => @dmail) %>
+        | <%= link_to "Forward", new_dmail_path(:respond_to_id => @dmail, :forward => true) %>
+        | <%= link_to "Filter messages like these", edit_maintenance_user_dmail_filter_path(:dmail_id => @dmail.id) %>
+        <% if CurrentUser.is_member? %>
+          | <%= link_to "Report", new_ticket_path(disp_id: @dmail.id, type: 'dmail') %>
+        <% end %>
+      </p>
+    </div>
+  </div>
+</div>
+
+<%= render "secondary_links" %>
+
+<% content_for(:page_title) do %>
+  Message - <%= @dmail.title %> - <%= Danbooru.config.app_name %>
+<% end %>

@@ -1,0 +1,351 @@
+
+
+#desktop-version-link {
+  display: none;
+}
+
+#searchbox-redirect-link {
+  display: none;
+}
+
+@media screen and (max-width: 900px) {
+  #ad-leaderboard {
+    height: 50px;
+    justify-content: center;
+
+    .adzone {
+      height: 50px;
+      width: 320px;
+    }
+  }
+}
+
+@media screen and (max-width: 800px) {
+  body.resp {
+    div#c-posts {
+      div#a-show {
+        #pool-nav, #search-seq-nav, #set-nav {
+          li {
+            height: 2rem;
+          }
+        }
+      }
+    }
+
+    #search-box { display: none; }
+
+    .mobile-search {
+      display: block;
+      margin: $padding-050 $padding-050 $padding-150;
+      .search-help {
+        font-size: $font-size;
+      }
+    }
+    .mobile-search > .search-form > form {
+      box-sizing: border-box;
+      display: flex;
+      width: 100%;
+      margin-bottom: $padding-025;
+      .search-input {
+        width: 100%;
+        input {
+          width: 100%;
+          box-sizing: border-box;
+          border-radius: $border-radius-half 0 0 $border-radius-half;
+        }
+        flex-grow: 1;
+      }
+      .search-button > button {
+        width: 32px;
+        height: 32px;
+        border-left: 1px solid #ccc; //HACK: hardcoded color
+        border-radius: 0 $border-radius-half $border-radius-half 0;
+      }
+    }
+
+    .guest-warning {
+      .guest-warning-dialog {
+        top: 5vh;
+        height: 90vh;
+        width: 80vw;
+      }
+    }
+
+    #desktop-version-link {
+      display: inline;
+    }
+
+    #searchbox-redirect-link {
+      display: inline;
+    }
+
+    #saved-searches-nav {
+      display: none;
+    }
+
+    div#page aside#sidebar {
+      padding: 5px;
+
+      input#tags {
+        width: 80%;
+      }
+
+      button[type=submit] {
+        font-size: 1.2em;
+        background-color: #EEE;
+        height: 42px;
+        padding: 2px 10px;
+        border: 1px solid rgb(197, 197, 197);
+      }
+    }
+
+    div#page {
+      padding-left: 0;
+      padding-right: 0;
+
+      > div /* div#c-$controller */
+      {
+        > div /* div#a-$action */
+        {
+          display: flex;
+          flex-direction: column;
+
+          /* Move #sidebar below #content. */
+          > aside#sidebar {
+            font-size: 1.5em;
+            float: none;
+            width: auto;
+            order: 2;
+          }
+        }
+      }
+    }
+
+    header {
+      position: relative;
+    }
+
+    #maintoggle {
+      display: block;
+      font-weight: bold;
+      font-size: 2em;
+
+      &.toggler-active {
+        background-color: lighten($link-color, 25%);
+        color: #000;
+      }
+    }
+
+    /* Make the quick search box in the navbar full width. */
+    header#top menu form input {
+      width: auto;
+    }
+
+    h1 {
+      display: none;
+    }
+
+    form {
+      select, input, textarea, button {
+        max-width: 100%;
+      }
+
+      select {
+        vertical-align: top;
+        font-size: 18pt;
+      }
+
+      input[type=text], input[type=email], input[type=password], input[type=number] {
+        vertical-align: top;
+        font-size: 18pt;
+        border: 1px solid #c5c5c5;
+        width: 90%;
+      }
+
+      textarea {
+        width: 90%;
+        vertical-align: top;
+        border: 1px solid #c5c5c5;
+      }
+
+      button, input[type=button] {
+        font-size: 160%;
+      }
+
+      input[type=submit] {
+        font-size: 160%;
+      }
+
+      input[type=submit].tiny {
+        font-size: 120%;
+        vertical-align: top;
+      }
+    }
+
+    form.simple_form {
+      div.input {
+        input[type=text], input[type=email], input[type=password], input[type=number] {
+          width: 90%;
+          max-width: 90%;
+        }
+
+        textarea {
+          width: 90%;
+          max-width: 90%;
+        }
+      }
+    }
+
+    div#page section#content {
+      margin: 0;
+      padding: 0;
+    }
+
+    #comments h2 {
+      display: none;
+    }
+
+    #posts #posts-container {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-evenly;
+    }
+
+    //
+    article.post-preview {
+      float: none;
+      margin: 0 0 10px 0;
+      text-align: center;
+      vertical-align: middle;
+      display: inline-block;
+      width: 31vw;
+
+      a {
+        margin: 0 auto;
+      }
+
+      img {
+        max-height: 150px;
+        max-width: 31vw;
+      }
+
+      .desc {
+        font-size: 100%;
+      }
+    }
+
+    .user-disable-cropped-false {
+      article.post-preview {
+        width: 31vw;
+
+        img {
+          height: auto;
+          max-height: none;
+          max-width: none;
+          width: 31vw;
+
+          &.has-cropped-false {
+            object-fit: cover;
+          }
+        }
+      }
+    }
+
+    div#options {
+      margin-top: 10px;
+      font-size: 24pt;
+      font-weight: bold;
+    }
+
+    div#tags {
+      margin-top: 30px;
+
+      li {
+        margin: 10px 0;
+      }
+
+      a.search-tag {
+        font-size: 24pt;
+        font-weight: bold;
+      }
+    }
+
+    #nav {
+      font-size: 2em;
+      line-height: 2em;
+      display: none;
+    }
+
+    header#top menu.main {
+      padding: 5px 10px;
+    }
+
+    h1 {
+      display: block;
+      font-size: 2em;
+      margin: 1em 0 0 0;
+    }
+
+    h2 {
+      font-size: 0.825em;
+      margin: 1em 0 0 0;
+    }
+
+    header {
+      text-align: center;
+      line-height: 2em;
+
+      h1 {
+        display: inline; //Needed for menu button
+      }
+    }
+
+    div#page {
+      margin: 0;
+    }
+  }
+}
+
+@media screen and (max-width: 660px) {
+  body.resp {
+    #c-forum-topics, #c-forum-posts {
+      #a-show {
+        padding: 1em 0.5em;
+      }
+
+      .creator {
+        display: none;
+      }
+
+      .created-at {
+        display: none;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 440px) {
+  body.resp {
+    input#expand-search {
+      display: none;
+    }
+
+    body {
+      width: 100%;
+    }
+
+    #post-sections {
+      font-size: 1em;
+    }
+
+    //div article.post-preview {
+    //  overflow: visible;
+    //}
+  }
+}
+
+#tos-notice {
+  display: none;
+}

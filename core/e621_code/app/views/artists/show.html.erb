@@ -1,0 +1,9 @@
+<%= render layout: "show" do %>
+  <% if @artist.visible? %>
+    <div>
+      <%= render "summary", artist: @artist %>
+    </div>
+  <% else %>
+    <p>The artist requested removal of this page.</p>
+  <% end %>
+<% end %>

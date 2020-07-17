@@ -1,0 +1,88 @@
+// Base formatting constants
+$border-radius-half: 3px;
+$border-radius-full: 6px;
+$base-padding: 1rem;
+$padding-050: $base-padding/2;
+$padding-025: $base-padding/4;
+$padding-100: $base-padding;
+$padding-125: $base-padding*1.25;
+$padding-150: $base-padding*1.5;
+
+// Font
+$font-size: 85%;
+$h1-size: 2em;
+$h2-size: 1.5em;
+$h3-size: 1.16667em;
+$h4-size: 1em;
+$dtext_h1_size: 2em;
+$dtext_h2_size: 1.8em;
+$dtext_h3_size: 1.6em;
+$dtext_h4_size: 1.4em;
+$dtext_h5_size: 1.2em;
+$dtext_h6_size: 1em;
+$h1_padding: 0.8em 0 0.25em 0;
+$h2_padding: 0.8em 0 0.25em 0;
+$h3_padding: 0.8em 0 0.25em 0;
+$h4_padding: 0.8em 0 0.25em 0;
+$base_font_family: Verdana, sans-serif;
+
+$box-shadow-size: 2px 2px 5px;
+
+
+
+@mixin animated-icon {
+  content: "►";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  color: $preview-icon-color;
+  background-color: $preview-icon-bg;
+  margin: 2px;
+  text-align: center;
+}
+
+@mixin sound-icon {
+  content: "♪";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  color: $preview-icon-color;
+  background-color: $preview-icon-bg;
+  margin: 2px;
+  text-align: center;
+}
+
+@mixin preview-type-badge($text) {
+  @include themable {
+    background-color: themed("color-section");
+    border: 1px solid themed("color-text-white");
+    color: themed("color-text");
+  }
+  z-index: 5;
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  text-align: center;
+  border-radius: $border-radius-full;
+  padding: 3px 5px;
+  font-size: 60%;
+  font-weight: bold;
+  content: $text;
+}
+
+// https://fontawesome.com/how-to-use/on-the-web/advanced/css-pseudo-elements
+@mixin fa-solid-icon($content) {
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+
+  font-family: "Font Awesome 5 Free", "Font Awesome 5 Pro";
+  font-weight: 900;
+  content: $content;
+}
+
+@mixin section-box-shadow($size: $box-shadow-size, $color: $box-shadow-color) {
+  box-shadow: $size $color;
+}

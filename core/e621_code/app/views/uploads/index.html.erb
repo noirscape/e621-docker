@@ -1,0 +1,84 @@
+<div id="c-uploads">
+  <div id="a-index">
+    <%= render "uploads/search" %>
+    <%= render "posts/partials/common/inline_blacklist" %>
+
+    <table width="100%" class="striped autofit">
+      <thead>
+        <tr>
+          <th>Upload</th>
+          <th>Info</th>
+          <th>Uploader</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @uploads.each do |upload| %>
+          <tr>
+            <td>
+              <%= PostPresenter.preview(upload.post, tags: "user:#{upload.uploader_name}", show_deleted: true) %>
+            </td>
+            <td class="col-expand upload-info">
+              <span class="info">
+                <strong>Upload</strong>
+                <%= link_to "##{upload.id}", upload %>
+              </span>
+
+              <span class="info">
+                <strong>Rating</strong>
+                <%= upload.rating %>
+              </span>
+
+              <% if upload.post.present? %>
+                <span class="info">
+                  <strong>Size</strong>
+                  <%= link_to "#{upload.post.file_size.to_s(:human_size, precision: 4)} #{upload.post.file_ext}", upload.post.file_url %>
+                  <% if upload.post.has_dimensions? %>
+                    (<%= upload.post.image_width %>x<%= upload.post.image_height %>)
+                  <% end %>
+                </span>
+              <% end %>
+              <br>
+
+              <span class="info">
+                <strong>Source</strong>
+                <%= link_to_if (upload.source =~ %r!\Ahttps?://!i), (upload.source.presence.try(:truncate, 50) || content_tag(:em, "none")), upload.source %>
+                <%= link_to "»", uploads_path(search: params[:search].merge(source_matches: upload.source)) %>
+              </span>
+              <br>
+
+              <% if upload.referer_url.present? %>
+                <span class="info">
+                  <strong>Referer</strong>
+                  <%= URI.parse(upload.referer_url).host rescue nil %>
+                </span>
+                <br>
+              <% end %>
+
+              <span class="info">
+                <strong>Tags</strong>
+                <%= upload.presenter.inline_tag_list_html %>
+              </span>
+            </td>
+            <td>
+              <%= link_to_user upload.uploader %>
+              <%= link_to "»", uploads_path(search: params[:search].merge(uploader_name: upload.uploader_name)) %>
+              <br><%= time_ago_in_words_tagged  upload.created_at %>
+            </td>
+            <td class="col-normal">
+              <%= render_status(upload) %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <%= numbered_paginator(@uploads) %>
+  </div>
+</div>
+
+<%= render "uploads/secondary_links" %>
+
+<% content_for(:page_title) do %>
+  Uploads - <%= Danbooru.config.app_name %>
+<% end %>

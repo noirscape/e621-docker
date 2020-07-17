@@ -1,0 +1,17 @@
+<div id="c-forum-posts">
+  <div id="a-new">
+    <% if @forum_topic %>
+      <h1>Reply to <%= @forum_topic.title %></h1>
+    <% else %>
+      <h1>New Forum Post</h1>
+    <% end %>
+
+    <%= render "forum_posts/partials/new/form", :forum_post => @forum_post %>
+  </div>
+</div>
+
+<%= render "forum_topics/secondary_links" %>
+
+<% content_for(:page_title) do %>
+  New Forum Post - <%= Danbooru.config.app_name %>
+<% end %>

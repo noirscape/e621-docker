@@ -1,0 +1,72 @@
+<div id="c-admin-users">
+  <div id="a-edit">
+    <h1>Edit User: <%= @user.name %></h1>
+
+    <%= form_tag(admin_user_path(@user), :method => :put, :class => "simple_form") do %>
+      <%= hidden_field_tag "id", @user.id %>
+
+      <div class="input">
+        <label class="block" for="user_name">Name</label>
+        <%= text_field "user", "name", size: "50" %>
+      </div>
+
+      <div class="input">
+        <label class="block" for="user_email">Email</label>
+        <%= text_field "user", "email", size: "50" %>
+      </div>
+
+      <div class="input">
+        <label class="block" for="user_verified">Email Verified</label>
+        <%= select_tag("user[verified]", options_for_select([["Yes", true], ["No", false]], @user.is_verified?)) %>
+      </div>
+
+      <div class="input">
+        <label class="block" for="user_about">About</label>
+        <%= text_area "user", "profile_about", size: "50x8", class: "dtext-full" %>
+      </div>
+
+      <div class="input">
+        <label class="block" for="user_rates">Rates</label>
+        <%= text_area "user", "profile_artinfo", size: "50x8", class: "dtext-full" %>
+      </div>
+
+      <div class="input integer optional">
+        <label class="block" for="user_base_upload_limit">Upload Limit Base</label>
+        <%= number_field "user", "base_upload_limit" %>
+      </div>
+
+      <div class="input integer optional">
+        <label for="user_level" class="optional">Level</label>
+        <%= user_level_select(:user, :level) %>
+      </div>
+
+      <div class="input">
+        <label for="user_can_upload_free" class="optional">Unrestricted Uploads</label>
+        <%= select(:user, :can_upload_free, [["Yes", true], ["No", false]]) %>
+      </div>
+
+      <div class="input">
+        <label for="user_can_approve_posts" class="optional">Approve Posts</label>
+        <%= select(:user, :can_approve_posts, [["Yes", true], ["No", false]]) %>
+      </div>
+
+      <div class="input">
+        <label for="user_no_flagging" class="optional">Banned From Flagging</label>
+        <%= select(:user, :no_flagging, [["Yes", true], ["No", false]]) %>
+      </div>
+
+      <div class="input">
+        <label for="user_no_feedback" class="optional">Banned From Giving Feedback</label>
+        <%= select(:user, :no_feedback, [["Yes", true], ["No", false]]) %>
+      </div>
+
+      <%= submit_tag "Update" %>
+    <% end %>
+  </div>
+</div>
+
+<%= render "users/secondary_links" %>
+
+<% content_for(:page_title) do %>
+  Edit User - <%= Danbooru.config.app_name %>
+<% end %>

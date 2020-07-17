@@ -1,0 +1,19 @@
+<div id="c-pool-versions">
+  <div id="a-index">
+    <h1>Pool History</h1>
+
+    <% if params.dig(:search, :pool_id).present? %>
+      <%= render "revert_listing" %>
+    <% else %>
+      <%= render "standard_listing" %>
+    <% end %>
+
+    <%= numbered_paginator(@pool_versions) %>
+  </div>
+</div>
+
+<%= render "pools/secondary_links" %>
+
+<% content_for(:page_title) do %>
+  Pool Versions - <%= Danbooru.config.app_name %>
+<% end %>

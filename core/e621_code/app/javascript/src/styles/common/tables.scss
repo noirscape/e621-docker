@@ -1,0 +1,104 @@
+
+table.table {
+  width: 100%;
+  p {
+    margin: 0;
+  }
+
+  td, th {
+    padding: 4px 6px;
+  }
+
+  tbody {
+    tr {
+      td {
+        padding: $padding-050 $padding-025;
+      }
+      @include themable {
+        background-color: themed("color-section");
+        border-bottom: 1px solid themed("color-foreground");
+      }
+      &:hover {
+        @include themable {
+          background-color: lighten( themed("color-section"), 10%);
+        }
+      }
+      &.selected {
+        @include themable {
+          background-color: lighten( themed("color-section"), 10%);
+        }
+      }
+      border-bottom: 1px solid $table-stripe-border;
+    }
+  }
+
+  .number, .links {
+    text-align: right;
+  }
+
+  thead {
+    tr {
+      @include themable {
+        background-color: darken( themed("color-section"), 5%);
+        border-bottom: 1px solid themed("color-foreground");
+      }
+    }
+
+    th {
+      font-weight: bold;
+      text-align: left;
+      @include themable {
+        color: darken( themed("color-text"), 10%);
+      }
+    }
+  }
+}
+
+// Needed so that unconverted tables work.
+table.striped {
+  @extend table.table;
+}
+
+/*
+ * A table where one column expands to fill the screen, while the
+ * other columns shrink to fit their contents.
+ */
+table.autofit {
+  td, th, .col-fit {
+    white-space: nowrap;
+    padding-right: 2em;
+  }
+
+  .col-expand {
+    white-space: normal;
+    width: 100%;
+  }
+
+  .col-normal {
+    white-space: normal;
+  }
+}
+
+table.search {
+  tr {
+    height: 2em;
+  }
+
+  th {
+    text-align: right;
+    padding-right: $base-padding;
+    vertical-align: top;
+  }
+
+  td {
+    vertical-align: top;
+  }
+}
+
+table.aligned-vertical {
+  @extend table.search;
+
+  tr {
+    height: 1.75em;
+  }
+}

@@ -1,0 +1,17 @@
+<% if disapprovals.length > 0 %>
+  <p>
+    It has been reviewed by <%= pluralize disapprovals.length, "approver" %>.
+
+    <% if disapprovals.map(&:reason).grep("borderline_quality").count > 0 %>
+      <%= disapprovals.map(&:reason).grep("borderline_quality").count %> believe it doesn't meet the quality standards.
+    <% end %>
+
+    <% if disapprovals.map(&:reason).grep("borderline_relevancy").count > 0 %>
+      <%= disapprovals.map(&:reason).grep("borderline_relevancy").count %> believe it isn't relevant.
+    <% end %>
+
+    <% if disapprovals.map(&:message).any?(&:present?) %>
+      Messages: <%= disapprovals.map(&:message).select(&:present?).map { |msg| format_text(msg, inline: true) }.to_sentence.html_safe %>.
+    <% end %>
+  </p>
+<% end %>

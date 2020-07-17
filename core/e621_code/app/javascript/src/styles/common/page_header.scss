@@ -1,0 +1,68 @@
+
+#maintoggle {
+  display: none;
+}
+
+header#top {
+  font-size: 1.05em;
+  margin: 0 $base-padding 0.8rem;
+  @include themable() {
+    color: themed("color-text");
+    background-color: themed("color-background");
+    background-image: themed("image-background");
+  }
+
+  menu {
+    margin-top: -2px;
+    @include themable {
+      background-color: themed("color-foreground");
+    }
+    border-radius: $border-radius-full;
+    padding: 6px 1rem;
+
+    form {
+      display: inline-block;
+
+      input {
+        width: 9.5em;
+      }
+    }
+
+    li {
+      margin: 0;
+      padding: 0;
+      white-space: nowrap;
+    }
+
+    li a {
+      padding: 6px 10px;
+    }
+  }
+
+  menu.main {
+    margin-top: 0;
+    @include themable {
+      background-color: themed("color-background");
+    }
+
+    li.current a {
+      @include themable {
+        background-color: themed("color-foreground");
+      }
+      font-weight: bold;
+    }
+
+    li#nav-sign-in a {
+      font-weight: bold;
+      color: $page-header-sign-in-link-color;
+    }
+
+    li.forum-updated a {
+      font-style: italic;
+    }
+  }
+
+  menu:only-child {
+    border-bottom: 2px solid $menu-background;
+  }
+}

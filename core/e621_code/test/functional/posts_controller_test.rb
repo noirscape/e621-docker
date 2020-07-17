@@ -1,0 +1,133 @@
+require "test_helper"
+
+class PostsControllerTest < ActionDispatch::IntegrationTest
+  context "The posts controller" do
+    setup do
+      PopularSearchService.stubs(:enabled?).returns(false)
+
+      @user = travel_to(1.month.ago) {create(:user)}
+      as_user do
+        @post = create(:post, :tag_string => "aaaa")
+      end
+    end
+
+    context "index action" do
+      should "render" do
+        get posts_path
+        assert_response :success
+      end
+
+      context "with a search" do
+        should "render" do
+          get posts_path, params: {:tags => "aaaa"}
+          assert_response :success
+        end
+      end
+
+      context "with an md5 param" do
+        should "render" do
+          get posts_path, params: { md5: @post.md5 }
+          assert_redirected_to(@post)
+        end
+
+        should "return error on nonexistent md5" do
+          get posts_path(md5: "foo")
+          assert_response 404
+        end
+      end
+
+      context "with a random search" do
+        should "render" do
+          get posts_path, params: { tags: "order:random" }
+          assert_response :success
+
+          get posts_path, params: { random: "1" }
+          assert_response :success
+        end
+      end
+    end
+
+    context "show_seq action" do
+      should "render" do
+        posts = FactoryBot.create_list(:post, 3)
+
+        get show_seq_post_path(posts[1].id), params: { seq: "prev" }
+        assert_redirected_to(posts[2])
+
+        get show_seq_post_path(posts[1].id), params: { seq: "next" }
+        assert_redirected_to(posts[0])
+      end
+    end
+
+    context "random action" do
+      should "render" do
+        get random_posts_path, params: { tags: "aaaa" }
+        assert_redirected_to(post_path(@post, tags: "aaaa"))
+      end
+    end
+
+    context "show action" do
+      should "render" do
+        get post_path(@post), params: {:id => @post.id}
+        assert_response :success
+      end
+
+      context "when the recommend service is enabled" do
+        setup do
+          @post2 = create(:post)
+          RecommenderService.stubs(:enabled?).returns(true)
+          RecommenderService.stubs(:available_for_post?).returns(true)
+        end
+
+        should "not error out" do
+          get_auth post_path(@post), @user
+          assert_response :success
+        end
+      end
+    end
+
+    context "update action" do
+      should "work" do
+        put_auth post_path(@post), @user, params: {:post => {:tag_string => "bbb"}}
+        assert_redirected_to post_path(@post)
+
+        @post.reload
+        assert_equal("bbb", @post.tag_string)
+      end
+
+      should "ignore restricted params" do
+        put_auth post_path(@post), @user, params: {:post => {:last_noted_at => 1.minute.ago}}
+        assert_nil(@post.reload.last_noted_at)
+      end
+    end
+
+    context "revert action" do
+      setup do
+        PostArchive.sqs_service.stubs(:merge?).returns(false)
+        as_user do
+          @post.update(tag_string: "zzz")
+        end
+      end
+
+      should "work" do
+        @version = @post.versions.first
+        assert_equal("aaaa", @version.tags)
+        put_auth revert_post_path(@post), @user, params: {:version_id => @version.id}
+        assert_redirected_to post_path(@post)
+        @post.reload
+        assert_equal("aaaa", @post.tag_string)
+      end
+
+      should "not allow reverting to a previous version of another post" do
+        as_user do
+          @post2 = create(:post, :uploader_id => @user.id, :tag_string => "herp")
+        end
+
+        put_auth revert_post_path(@post), @user, params: { :version_id => @post2.versions.first.id }
+        @post.reload
+        assert_not_equal(@post.tag_string, @post2.tag_string)
+        assert_response :missing
+      end
+    end
+  end
+end

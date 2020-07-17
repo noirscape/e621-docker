@@ -1,0 +1,123 @@
+<% unless CurrentUser.user.is_janitor? %>
+  <div style="margin-bottom: 1em;">
+    <p>Before editing, read the <%= link_to "how to tag guide", wiki_page_path(:id => "howto:tag") %>.</p>
+  </div>
+<% end %>
+
+<%= form_for(post, :html => {:class => "simple_form", :id => "form"}) do |f| %>
+  <%= hidden_field_tag :tags_query, params[:q] %>
+  <%= hidden_field_tag :pool_id, params[:pool_id] %>
+  <%= hidden_field_tag :post_set_id, params[:post_set_id] %>
+  <%= f.hidden_field :old_tag_string, :value => post.tag_string %>
+  <%= f.hidden_field :old_parent_id, :value => post.parent_id %>
+  <%= f.hidden_field :old_source, :value => post.source %>
+  <%= f.hidden_field :old_rating, :value => post.rating %>
+
+  <div class="input" id="tags-container">
+    <div class="header">
+      <%= f.label :tag_string, "Tags" %>
+
+      <span class="options">
+        <i id="face" class="fas"></i>
+        <span class="count"></span>
+        <a href="javascript:void(0)"><i id="open-edit-dialog" class="fas fa-arrows-alt" title="detach" data-shortcut="shift+e"></i></a>
+      </span>
+    </div>
+
+    <div id="tag-string-editor">
+      <%= f.text_area :tag_string, :size => "60x5", :spellcheck => false, :"data-autocomplete" => "tag-edit", :"data-shortcut" => "e", :value => post.presenter.split_tag_list_text + " " %>
+    </div>
+
+    <div>
+      <%= f.label :locked_tags, "Locked Tags" %>
+      <%= f.text_area :locked_tags, :size => "60x2", :spellcheck => false, :"data-autocomplete" => "tag-edit", :"data-shortcut" => "e", :value => (post.locked_tags || ""), disabled: !CurrentUser.is_admin? %>
+    </div>
+  </div>
+
+  <div class="input">
+    <% if post.is_rating_locked? %>
+      This post is rating locked.
+    <% else %>
+      <%= f.label :blank, "Rating" %>
+
+      <fieldset class="ratings">
+        <%= f.radio_button :rating, :e %>
+        <%= f.label :rating_e, "Explicit" %>
+
+        <%= f.radio_button :rating, :q %>
+        <%= f.label :rating_q, "Questionable" %>
+
+        <%= f.radio_button :rating, :s %>
+        <%= f.label :rating_s, "Safe" %>
+      </fieldset>
+    <% end %>
+  </div>
+
+  <div class="input">
+    <%= f.label :parent_id, "Parent" %>
+    <%= f.text_field :parent_id, :size => 5 %>
+  </div>
+
+  <div class="input">
+    <%= f.label :source, "Sources" %>
+    <%= f.text_area :source, size: '60x5', spellcheck: false %>
+  </div>
+
+  <div class="input">
+    <%= f.label :description, "Description" %>
+    <%= f.text_area :description, size: '60x5', spellcheck: true %>
+  </div>
+
+  <% if Danbooru.config.iqdbs_server %>
+    <div class="input" id="iqdb-similar" style="display: none;"></div>
+  <% end %>
+
+  <% if CurrentUser.is_privileged? %>
+    <div class="input">
+      <%= f.label :blank, "Lock" %>
+
+      <fieldset class="locks">
+        <% if CurrentUser.is_janitor? %>
+          <%= f.check_box :is_note_locked %>
+          <%= f.label :is_note_locked, "Notes" %>
+        <% end %>
+
+        <%= f.check_box :is_rating_locked %>
+        <%= f.label :is_rating_locked, "Rating" %>
+
+        <% if CurrentUser.is_admin? %>
+          <%= f.check_box :is_status_locked %>
+          <%= f.label :is_status_locked, "Status" %>
+        <% end %>
+      </fieldset>
+    </div>
+  <% end %>
+
+  <% if CurrentUser.is_janitor? %>
+    <div class="input">
+      <%= f.label :bg_color, "Background Color" %>
+      <%= f.text_field :bg_color, :size => 6 %>
+    </div>
+  <% end %>
+
+  <% if CurrentUser.is_admin? %>
+    <div class="input">
+      <%= f.label :blank, "Limits" %>
+      <fieldset class="limits">
+        <%= f.check_box :hide_from_anonymous %>
+        <%= f.label :hide_from_anonymous, "Hide from Anon." %>
+        <%= f.check_box :hide_from_search_engines %>
+        <%= f.label :hide_from_search_engines, "Hide from search engines" %>
+      </fieldset>
+    </div>
+  <% end %>
+
+  <div class="input">
+    <%= f.label :edit_reason, "Edit Reason" %>
+    <%= f.text_field :edit_reason, maxlength: 250, size: 40 %>
+  </div>
+
+  <div class="edit-submit input">
+    <%= submit_tag "Submit", :class => "ui-button ui-widget ui-corner-all" %>
+  </div>
+<% end %>

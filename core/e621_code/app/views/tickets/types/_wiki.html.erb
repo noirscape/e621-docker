@@ -1,0 +1,6 @@
+<% if @ticket.wiki %>
+    <tr>
+      <td><span class='title'>Reported Wiki Page</span></td>
+      <td><%= link_to(@ticket.wiki.title, wiki_page_path(id: @ticket.wiki.id)) %></td>
+    </tr>
+<% end %>

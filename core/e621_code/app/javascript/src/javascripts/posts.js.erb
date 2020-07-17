@@ -1,0 +1,892 @@
+import Utility from './utility'
+import ZingTouch from 'zingtouch'
+import LS from './local_storage'
+import Note from './notes'
+import { SendQueue } from './send_queue'
+
+let Post = {};
+
+Post.pending_update_count = 0;
+Post.resizeMode = "unknown";
+
+Post.initialize_all = function() {
+
+  if ($("#c-posts").length) {
+    this.initialize_shortcuts();
+    this.initialize_collapse();
+  }
+
+  if ($("#c-posts").length && $("#a-index").length) {
+    this.initialize_excerpt();
+//    this.initialize_gestures();
+  }
+
+  if ($("#c-posts").length && $("#a-show").length) {
+    this.initialize_links();
+    this.initialize_post_relationship_previews();
+    this.initialize_favlist();
+    this.initialize_post_sections();
+    this.initialize_resize();
+    this.initialize_similar();
+//    this.initialize_gestures();
+    this.initialize_voting();
+    this.initialize_moderation();
+  }
+
+  if ($("#p-index-by-post").length)
+    this.initialize_voting();
+
+  if ($("#c-posts #a-show, #c-uploads #a-new").length) {
+    this.initialize_edit_dialog();
+  }
+
+  $(document).on("danbooru:open-post-edit-tab", () => Utility.disableShortcuts = true);
+  $(document).on("danbooru:open-post-edit-tab", () => $('#post_tag_string').focus());
+  $(document).on("danbooru:close-post-edit-tab", () => Utility.disableShortcuts = false);
+
+  var $fields_multiple = $('[data-autocomplete="tag-edit"]');
+  $fields_multiple.on("keypress.danbooru", Post.update_tag_count);
+  $fields_multiple.on("click", Post.update_tag_count);
+}
+
+Post.initialize_moderation = function() {
+  $("#unapprove-post-link").on('click', e => {
+    Post.unapprove($(e.target).data('pid'));
+    e.preventDefault();
+  });
+  $(".unflag-post-link").on('click', e => {
+    const $e = $(e.target);
+    Post.unflag($e.data('pid'), $e.data('type'));
+    e.preventDefault();
+  });
+};
+
+Post.initialize_collapse = function() {
+  $('.tag-list-header').on('click', function(e) {
+    const category = $(e.target).data('category');
+    $(`.${category}-tag-list`).toggle();
+    $(e.target).toggleClass("hidden-category");
+    e.preventDefault();
+  });
+}
+
+Post.initialize_voting = function() {
+  $(document).on("click.danbooru.post", '.post-vote-up-link', Post.vote_up);
+  $(document).on("click.danbooru.post", ".post-vote-down-link", Post.vote_down);
+}
+
+Post.initialize_edit_dialog = function() {
+  $("#open-edit-dialog").show().on("click.danbooru", function(e) {
+    Post.open_edit_dialog();
+    e.preventDefault();
+  });
+}
+
+Post.open_edit_dialog = function() {
+  if ($("#edit-dialog").length === 1) {
+    return;
+  }
+
+  $(document).trigger("danbooru:open-post-edit-dialog");
+
+  $("#edit").show();
+  $("#comments").hide();
+  $("#post-sections li").removeClass("active");
+  $("#post-edit-link").parent("li").addClass("active");
+
+  var $tag_string = $("#post_tag_string,#upload_tag_string");
+  $("div.input").has($tag_string).prevAll().hide();
+  $("#open-edit-dialog").hide();
+
+  var dialog = $("<div/>").attr("id", "edit-dialog");
+  $("#form").appendTo(dialog);
+  dialog.dialog({
+    title: "Edit tags",
+    width: $(window).width() * 0.6,
+    position: {
+      my: "right",
+      at: "right-20",
+      of: window
+    },
+    drag: function(e, ui) {
+      if (Utility.meta("enable-auto-complete") === "true") {
+        $tag_string.data("uiAutocomplete").close();
+      }
+    },
+    close: Post.close_edit_dialog
+  });
+  dialog.dialog("widget").draggable("option", "containment", "none");
+
+  var pin_button = $("<button/>").button({icons: {primary: "ui-icon-pin-w"}, label: "pin", text: false});
+  pin_button.css({width: "20px", height: "20px", position: "absolute", right: "28.4px"});
+  dialog.parent().children(".ui-dialog-titlebar").append(pin_button);
+  pin_button.on("click.danbooru", function(e) {
+    var dialog_widget = $('.ui-dialog:has(#edit-dialog)');
+    var pos = dialog_widget.offset();
+
+    if (dialog_widget.css("position") === "absolute") {
+      pos.left -= $(window).scrollLeft();
+      pos.top -= $(window).scrollTop();
+      dialog_widget.offset(pos).css({ position: "fixed" });
+      dialog.dialog("option", "resize", function() { dialog_widget.css({ position: "fixed" }); });
+
+      pin_button.button("option", "icons", {primary: "ui-icon-pin-s"});
+    } else {
+      pos.left += $(window).scrollLeft();
+      pos.top += $(window).scrollTop();
+      dialog_widget.offset(pos).css({ position: "absolute" });
+      dialog.dialog("option", "resize", function() { /* do nothing */ });
+
+      pin_button.button("option", "icons", {primary: "ui-icon-pin-w"});
+    }
+  });
+
+  dialog.parent().mouseout(function(e) {
+    dialog.parent().css({"opacity": 0.6, "transition": "opacity .4s ease"});
+  }).mouseover(function(e) {
+    dialog.parent().css({"opacity": 1, "transition": "opacity .2s ease"});
+  });
+
+  $tag_string.css({"resize": "none", "width": "100%"});
+  $tag_string.focus().selectEnd().height($tag_string[0].scrollHeight);
+}
+
+Post.close_edit_dialog = function(e, ui) {
+  $("#form").appendTo($("#c-posts #edit,#c-uploads #a-new"));
+  $("#edit-dialog").remove();
+  var $tag_string = $("#post_tag_string,#upload_tag_string");
+  $("div.input").has($tag_string).prevAll().show();
+  $("#open-edit-dialog").show();
+  $tag_string.css({"resize": "", "width": ""});
+  $(document).trigger("danbooru:close-post-edit-dialog");
+}
+
+Post.initialize_similar = function() {
+  $("#similar-button").on("click.danbooru", function(e) {
+    $.get("/iqdb_queries", {"url": $("#post_source").val()}).done(function(html) {$("#iqdb-similar").html(html).show()});
+    e.preventDefault();
+  });
+}
+
+Post.has_next_target = function() {
+  return $(".paginator a[rel~=next]").length || $("#search-seq-nav a[rel~=next]").length || $("#pool-nav li.pool-selected-true a[rel~=next], #set-nav a.active[rel~=next]").length;
+}
+
+Post.has_prev_target = function() {
+  return $(".paginator a[rel~=prev]").length || $("#search-seq-nav a[rel~=prev]").length || $("#pool-nav li.pool-selected-true a[rel~=prev], #set-nav a.active[rel~=prev]").length
+}
+
+Post.initialize_gestures = function() {
+  if (Utility.meta("disable-mobile-gestures") === "true") {
+    return;
+  }
+  if (!(('ontouchstart' in window) || (navigator.maxTouchPoints > 0)))
+    return;
+  if (navigator.userAgent.toLowerCase().indexOf("firefox") !== -1)
+    return; // Bug with firefox doing strange normalization of touch inputs that breaks the detector used.
+
+  const zing = new ZingTouch.Region(document.body, false, false);
+  zing.bind(document.body, 'swipe', function(e) {
+    console.log(e);
+    const angle = e.detail.data[0].currentDirection;
+    const hasPrev = Post.has_prev_target();
+    const hasNext = Post.has_next_target();
+    if (hasPrev && (angle > 360-25 || angle < 25)) { // right swipe
+        $("body").css({"transition-timing-function": "ease", "transition-duration": "0.2s", "opacity": "0", "transform": "translateX(150%)"});
+        Utility.delay(200).then(function() { Post.nav_prev(e); });
+    }
+    if (hasNext && angle > 180-25 && angle < 180+25) { // Left swipe
+        $("body").css({"transition-timing-function": "ease", "transition-duration": "0.2s", "opacity": "0", "transform": "translateX(-150%)"});
+        Utility.delay(200).then(function() { Post.nav_next(e); });
+    }
+  });
+
+  const $body = $("body");
+  if($body.data('zing'))
+    return;
+
+  $body.data("zing", zing);
+  $("#image-container").css({overflow: "visible"});
+}
+
+Post.nav_prev = function(e) {
+  var href = "";
+
+  if ($("#search-seq-nav").length) {
+    href = $("#search-seq-nav a[rel~=prev]").attr("href");
+    if (href) {
+      location.href = href;
+    }
+  } else if ($(".paginator a[rel~=prev]").length) {
+    location.href = $("a[rel~=prev]").attr("href");
+  } else {
+    href = $("#pool-nav li.pool-selected-true a[rel~=prev], #set-nav a.active[rel~=prev]").attr("href");
+    if (href) {
+      location.href = href;
+    }
+  }
+
+  e.preventDefault();
+}
+
+Post.nav_next = function(e) {
+  var href = "";
+
+  if ($("#search-seq-nav").length) {
+    href = $("#search-seq-nav a[rel~=next]").attr("href");
+    location.href = href;
+  } else if ($(".paginator a[rel~=next]").length) {
+    location.href = $(".paginator a[rel~=next]").attr("href");
+  } else {
+    href = $("#pool-nav li.pool-selected-true a[rel~=next], #set-nav a.active[rel~=next]").attr("href");
+    if (href) {
+      location.href = href;
+    }
+  }
+
+  e.preventDefault();
+}
+
+Post.initialize_shortcuts = function() {
+  if ($("#a-show").length) {
+    if ($("#flash-content").length) {
+      Utility.disableShortcuts = true;
+      $("#flash-shortcut-notice").show();
+    }
+    Utility.keydown("a", "prev_page", Post.nav_prev);
+    Utility.keydown("d", "next_page", Post.nav_next);
+  }
+}
+
+Post.initialize_links = function() {
+  $(".undelete-post-link").on('click', e => {
+    e.preventDefault();
+    if(!confirm("Are you sure you want to undelete this post?"))
+      return;
+    Post.undelete($(e.target).data('pid'));
+  });
+  $(".approve-post-link").on('click', e => {
+    e.preventDefault();
+    Post.approve($(e.target).data('pid'), true);
+  });
+  $("#destroy-post-link").on('click', e => {
+    e.preventDefault();
+    if(!confirm("This will permanently delete this post (meaning the file will be deleted). Are you sure you want to delete this post?"))
+      return;
+    Post.destroy($(e.target).data('pid'));
+  });
+  $(".disapprove-post-link").on('click', e => {
+    e.preventDefault();
+    const target = $(e.target);
+    Post.disapprove(target.data('pid'), target.data('reason'), true);
+  });
+  $("#set-as-avatar-link").on('click.danbooru', function(e) {
+    e.preventDefault();
+    if(!confirm("Set post as avatar?"))
+      return;
+    Post.set_as_avatar($(e.target).data('post-id'));
+  });
+  $("#copy-notes").on("click.danbooru", function(e) {
+    var current_post_id = $("meta[name=post-id]").attr("content");
+    var other_post_id = parseInt(prompt("Enter the ID of the post to copy all notes to:"), 10);
+
+    if (other_post_id !== null) {
+      $.ajax("/posts/" + current_post_id + "/copy_notes", {
+        type: "PUT",
+        data: {
+          other_post_id: other_post_id
+        },
+        success: function(data) {
+          $(window).trigger("danbooru:notice", "Successfully copied notes to <a href='" + other_post_id + "'>post #" + other_post_id + "</a>");
+        },
+        error: function(data) {
+          if (data.status === 404) {
+            $(window).trigger("danbooru:error", "Error: Invalid destination post");
+          } else if (data.responseJSON && data.responseJSON.reason) {
+            $(window).trigger("danbooru:error", "Error: " + data.responseJSON.reason);
+          } else {
+            $(window).trigger("danbooru:error", "There was an error copying notes to <a href='" + other_post_id + "'>post #" + other_post_id + "</a>");
+          }
+        }
+      });
+    }
+
+    e.preventDefault();
+  });
+}
+
+Post.initialize_post_relationship_previews = function() {
+  var current_post_id = $("meta[name=post-id]").attr("content");
+  $("[id=post_" + current_post_id + "]").addClass("current-post");
+
+  const toggle = function() {
+    Post.toggle_relationship_preview($("#has-children-relationship-preview"), $("#has-children-relationship-preview-link"));
+    Post.toggle_relationship_preview($("#has-parent-relationship-preview"), $("#has-parent-relationship-preview-link"));
+  }
+
+  const flip_saved = function() {
+    if (LS.get("show-relationship-previews") === "1")
+      LS.put("show-relationship-previews", "0");
+    else
+      LS.put("show-relationship-previews", "1");
+  }
+
+  if (LS.get("show-relationship-previews") === "1") {
+    toggle();
+  }
+
+  $("#has-children-relationship-preview-link").on("click.danbooru", function(e) {
+    toggle();
+    flip_saved();
+    e.preventDefault();
+  });
+  $("#has-parent-relationship-preview-link").on("click.danbooru", function(e) {
+    toggle();
+    flip_saved();
+    e.preventDefault();
+  })
+}
+
+Post.toggle_relationship_preview = function(preview, preview_link) {
+  preview.toggle();
+  if (preview.is(":visible")) {
+    preview_link.html("&laquo; hide");
+  } else {
+    preview_link.html("show &raquo;");
+  }
+}
+
+Post.initialize_favlist = function() {
+  $("#show-favlist-link, #hide-favlist-link").on("click.danbooru", function(e) {
+    $("#favlist, #show-favlist-link, #hide-favlist-link").toggle();
+    e.preventDefault();
+  });
+}
+
+Post.expand_image = function(e) {
+  return new Promise(function(resolve, reject) {
+    var $image = $("#image");
+    var $imageContainer = $('#image-container');
+    var $notice = $("#image-resize-notice");
+    $image.on("load.danbooru", function() {
+      $image.css("animation", "sharpen 0.5s forwards");
+      $notice.hide();
+      $image.off('load.danbooru').off('error.danbooru');
+      resolve(true);
+    });
+    $image.on("error.danbooru", function() {
+      $image.off('load.danbooru').off('error.danbooru');
+      reject(false);
+    });
+    $image.attr("src", $imageContainer.data('file-url'));
+    $image.css("filter", "blur(8px)");
+    $image.attr({height: $image.data("original-height"), width: $image.data("original-width")})
+    $notice.children().eq(0).hide();
+    $notice.children().eq(1).show(); // Loading message
+    Note.Box.scale_all();
+    $image.data("scale-factor", 1);
+  });
+}
+
+Post.shrink_image = function() {
+  return new Promise(function(resolve, reject) {
+    var $image = $("#image");
+    var $imageContainer = $('#image-container');
+    var $notice = $("#image-resize-notice");
+    $notice.show();
+    $notice.children().eq(0).hide();
+    $notice.children().eq(1).show(); // Loading message
+    $image.on("load.danbooru", function() {
+      $image.css("animation", "sharpen 0.5s forwards");
+      $notice.children().eq(0).show();
+      $notice.children().eq(1).hide();
+      $image.off('load.danbooru').off('error.danbooru');
+      resolve(true);
+    });
+    $image.on("error.danbooru", function() {
+      $image.off('load.danbooru').off('error.danbooru');
+      reject(false);
+    });
+    $image.attr("src", $imageContainer.data('large-file-url'));
+    $image.css("filter", "blur(8px)");
+    $image.attr({height: $image.data("large-height"), width: $image.data("large-width")})
+    Note.Box.scale_all();
+    $image.data("scale-factor", 1);
+  });
+}
+
+Post.resize_fit = function() {
+  const resizeToFit = function() {
+    const $image = $("#image");
+    $image.removeAttr('height');
+    $image.removeAttr('width');
+    $image.addClass("fit-window");
+    Post.resize_ugoira_controls();
+    Note.Box.scale_all();
+  }
+  if(Post.resizeMode === "large")
+    Post.expand_image().then(resizeToFit);
+  else
+    resizeToFit();
+}
+
+Post.resize_original = function() {
+  const resizeToOriginal = function() {
+    const $image = $("#image");
+    $image.removeClass("fit-window");
+    $image.attr({height: $image.data('original-height'), width: $image.data('original-width')});
+    Post.resize_ugoira_controls();
+    Note.Box.scale_all();
+  };
+  if(Post.resizeMode === "large")
+    Post.expand_image().then(resizeToOriginal);
+  else
+    resizeToOriginal();
+}
+
+Post.resize_sample = function() {
+  if(Post.resizeMode === "large")
+    return;
+  Post.shrink_image().then(function() {
+    const $image = $('#image');
+    $image.removeAttr('height', 'width');
+    $image.addClass('fit-window');
+    Post.resize_ugoira_controls();
+    Note.Box.scale_all();
+  });
+}
+
+Post.set_size_mode = function(mode) {
+  const modeMap = {large: "Sample", fit: "Scale To Fit", original: "Original"};
+  Post.resizeMode = mode;
+  $('#current-image-resize-mode').text(`Change Size Mode (${modeMap[mode] || "?Unknown?"})`);
+}
+
+Post.resize_notes = function() {
+  Note.Box.scale_all();
+}
+
+
+Post.initialize_resize = function() {
+  const $image = $('#image');
+  if($image.length > 0 && $image[0]) {
+    if ($image[0].complete) {
+      Post.resize_notes();
+    } else {
+      $image.on('load', function (e) {
+        $image.off('load');
+        Post.resize_notes();
+      });
+    }
+  }
+  $("#current-image-resize-mode").on('click', function(e) {
+    Post.resize_cycle_mode(e);
+  });
+  const image_override = Utility.meta('image-override-size');
+  if(image_override)
+    Post.set_size_mode(image_override);
+  else
+    Post.set_size_mode(Utility.meta("default-image-size"));
+
+  this.initialize_change_resize_mode_link();
+  if(Post.resizeMode === "fit") {
+    Post.resize_fit();
+  }
+  if(Post.resizeMode !== "original") {
+    $(window).on('resize', Post.resize_notes);
+  }
+}
+
+Post.resize_cycle_mode = function(e) {
+  if(e && e.target)
+    e.preventDefault();
+  if ($("#image-container").hasClass("blacklisted-active"))
+    return;
+  const $target = $('#current-image-resize-mode');
+  const overrideMode = Utility.meta('image-override-size');
+  if(overrideMode)
+    return;
+  let allowedModes = ['large', 'fit', 'original'];
+  const hasSamples = $target.data('samples');
+  if (hasSamples != true)
+    allowedModes.splice(0,1);
+  $(window).off('resize', Post.resize_notes);
+  const nextMode = allowedModes[(allowedModes.indexOf(Post.resizeMode) + 1) % allowedModes.length];
+  const modeHandlers = {
+    large() {
+      Post.resize_sample();
+      $(window).on('resize', Post.resize_notes);
+      Post.set_size_mode("large");
+    },
+    fit() {
+      Post.resize_fit();
+      $(window).on('resize', Post.resize_notes);
+      Post.set_size_mode("fit");
+    },
+    original() {
+      Post.resize_original();
+      Post.set_size_mode("original");
+    }
+  }
+  modeHandlers[nextMode]();
+}
+
+Post.initialize_change_resize_mode_link = function() {
+  $("#image-resize-link").on("click.danbooru", Post.resize_cycle_mode); // For top panel
+  Utility.keydown('v', 'resize', Post.resize_cycle_mode);
+}
+
+Post.initialize_excerpt = function() {
+  $("#excerpt").hide();
+
+  $("#show-posts-link").on("click.danbooru", function(e) {
+    $("#show-posts-link").parent("li").addClass("active");
+    $("#show-excerpt-link").parent("li").removeClass("active");
+    $("#posts").show();
+    $("#excerpt").hide();
+    e.preventDefault();
+  });
+
+  $("#show-excerpt-link").on("click.danbooru", function(e) {
+    if ($(this).parent("li").hasClass("active")) {
+      return;
+    }
+    $("#show-posts-link").parent("li").removeClass("active");
+    $("#show-excerpt-link").parent("li").addClass("active");
+    $("#posts").hide();
+    $("#excerpt").show();
+    e.preventDefault();
+  });
+
+  if (!$(".post-preview").length && /Nobody here but us chickens/.test($("#posts").html())) {
+    $("#show-excerpt-link").click();
+  }
+}
+
+Post.initialize_post_sections = function() {
+  $("#post-sections li a,#side-edit-link").on("click.danbooru", function(e) {
+    if (e.target.hash === "#comments") {
+      $("#comments").show();
+      $("#edit").hide();
+    } else if (e.target.hash === "#edit") {
+      $("#edit").show();
+      $("#comments").hide();
+      $("#post_tag_string").focus().selectEnd().height($("#post_tag_string")[0].scrollHeight);
+      $(document).trigger("danbooru:open-post-edit-tab");
+      Post.update_tag_count({target: $("#post_tag_string")});
+    } else {
+      $("#edit").hide();
+      $("#comments").hide();
+    }
+
+    if(e.target.hash !== "#edit") {
+      $(document).trigger("danbooru:close-post-edit-tab");
+    }
+
+    $("#post-sections li").removeClass("active");
+    $(e.target).parent("li").addClass("active");
+    e.preventDefault();
+  });
+}
+
+Post.resize_ugoira_controls = function() {
+  var $img = $("#image");
+  var width = Math.max($img.width(), 350);
+  $("#ugoira-control-panel").css("width", width);
+  $("#seek-slider").css("width", width - 81);
+}
+
+Post.notice_update = function(x) {
+  if (x === "inc") {
+    Post.pending_update_count += 1;
+    $(window).trigger("danbooru:notice", "Updating posts (" + Post.pending_update_count + " pending)...", true);
+  } else {
+    Post.pending_update_count -= 1;
+
+    if (Post.pending_update_count < 1) {
+      $(window).trigger("danbooru:notice", "Posts updated");
+    } else {
+      $(window).trigger("danbooru:notice", "Updating posts (" + Post.pending_update_count + " pending)...", true);
+    }
+  }
+}
+
+Post.update_data = function(data) {
+  var $post = $("#post_" + data.id);
+  $post.attr("data-tags", data.tag_string);
+  $post.data("rating", data.rating);
+  $post.removeClass("post-status-has-parent post-status-has-children");
+  if (data.parent_id) {
+    $post.addClass("post-status-has-parent");
+  }
+  if (data.has_visible_children) {
+    $post.addClass("post-status-has-children");
+  }
+}
+
+Post.tag = function(post_id, tags) {
+  const tag_string = (Array.isArray(tags) ? tags.join(" ") : String(tags));
+  Post.update(post_id, { "post[old_tag_string]": "", "post[tag_string]": tag_string });
+}
+
+Post.tagScript = function(post_id, tags) {
+  const tag_string = (Array.isArray(tags) ? tags.join(" ") : String(tags));
+  Post.update(post_id, { "post[tag_string_diff]": tag_string });
+}
+
+Post.update = function(post_id, params) {
+  Post.notice_update("inc");
+
+  SendQueue.add(function() {
+    $.ajax({
+      type: "PUT",
+      url: "/posts/" + post_id + ".json",
+      data: params,
+      success: function(data) {
+        Post.notice_update("dec");
+        Post.update_data(data);
+      },
+      error: function(data) {
+        Post.notice_update("dec");
+        $(window).trigger("danbooru:error", 'There was an error updating <a href="/posts/' + post_id + '">post #' + post_id + '</a>');
+      }
+    });
+  });
+}
+
+Post.delete_with_reason = function(post_id, reason, reload_after_delete) {
+  Post.notice_update("inc");
+  SendQueue.add(function() {
+    $.ajax({
+      type: "POST",
+      url: `/moderator/post/posts/${post_id}/delete.json`,
+      data: {commit: "Delete", reason: reason, move_favorites: true}
+    }).fail(function(data) {
+      var message = $.map(data.responseJSON.errors, function(msg, attr) { return msg; }).join('; ');
+      $(window).trigger('danbooru:error', "Error: " + message);
+    }).done(function(data) {
+      $(window).trigger("danbooru:notice", "Deleted post.");
+      if(reload_after_delete) {
+        location.reload();
+      } else {
+        $(`article#post_${post_id}`).attr('data-flags', 'deleted');
+      }
+    }).always(function() {
+      Post.notice_update("dec");
+    });
+  });
+}
+
+Post.undelete = function(post_id) {
+  Post.notice_update("inc");
+  SendQueue.add(function() {
+    $.ajax({
+      type: "POST",
+      url: `/moderator/post/posts/${post_id}/undelete.json`
+    }).fail(function(data) {
+//      var message = $.map(data.responseJSON.errors, function(msg, attr) { return msg; }).join('; ');
+      const message = data.responseJSON.message;
+      $(window).trigger('danbooru:error', "Error: " + message);
+    }).done(function(data) {
+      $(window).trigger("danbooru:notice", "Deleted post.");
+      $(`article#post_${post_id}`).attr('data-flags', 'active');
+    }).always(function() {
+      Post.notice_update("dec");
+    });
+  });
+}
+
+Post.unflag = function(post_id, approval) {
+  Post.notice_update("inc");
+  let modApproval = approval || 'none';
+  SendQueue.add(function() {
+    $.ajax({
+      type: "DELETE",
+      url: `/posts/${post_id}/flag.json`,
+      data: {approval: modApproval}
+    }).fail(function(data) {
+//      var message = $.map(data.responseJSON.errors, function(msg, attr) { return msg; }).join('; ');
+      const message = data.responseJSON.message;
+      $(window).trigger('danbooru:error', "Error: " + message);
+    }).done(function(data) {
+      $(window).trigger("danbooru:notice", "Unflagged post");
+      location.reload();
+    }).always(function() {
+      Post.notice_update("dec");
+    });
+  });
+}
+
+Post.unapprove = function(post_id) {
+  Post.notice_update("inc");
+  SendQueue.add(function() {
+    $.ajax({
+      type: "DELETE",
+      url: "/moderator/post/approval.json",
+      data: {post_id: post_id}
+    }).fail(function(data) {
+      var message = $.map(data.responseJSON.errors, function(msg, attr) { return msg; }).join('; ');
+      $(window).trigger('danbooru:error', "Error: " + message);
+    }).done(function(data) {
+      $(window).trigger("danbooru:notice", "Unapproved post.");
+      location.reload();
+    }).always(function() {
+      Post.notice_update("dec");
+    });
+  });
+}
+
+Post.destroy = function(post_id) {
+  $.post(`/moderator/post/posts/${post_id}/expunge.json`, {}
+  ).fail(data => {
+    var message = $.map(data.responseJSON.errors, function(msg, attr) { return msg; }).join("; ");
+    $(window).trigger("danbooru:error", "Error: " + message);
+  }).done(data => {
+    location.reload();
+  });
+};
+
+Post.approve = function(post_id, should_reload) {
+  Post.notice_update("inc");
+  SendQueue.add(function() {
+    $.post(
+      "/moderator/post/approval.json",
+      {"post_id": post_id}
+    ).fail(function(data) {
+      var message = $.map(data.responseJSON.errors, function(msg, attr) { return msg; }).join("; ");
+      $(window).trigger("danbooru:error", "Error: " + message);
+    }).done(function(data) {
+      if ($("#c-moderator-post-queues").length) {
+        $(`#c-moderator-post-queues #post-${post_id}`).hide();
+        $(window).trigger("danbooru:modqueue_increment_processed");
+        $(window).trigger("danbooru:notice", "Post was approved");
+        return;
+      }
+      var $post = $("#post_" + post_id);
+      if ($post.length) {
+        $post.data("flags", $post.data("flags").replace(/pending/, ""));
+        $post.removeClass("post-status-pending");
+        $(window).trigger("danbooru:notice", "Approved post #" + post_id);
+      }
+      if (should_reload === true)
+        location.reload();
+    }).always(function() {
+      Post.notice_update("dec");
+    });
+  });
+}
+
+Post.disapprove = function(post_id, reason, should_reload) {
+  Post.notice_update("inc");
+  SendQueue.add(function() {
+    $.post(
+      "/moderator/post/disapprovals.json",
+      {"post_disapproval[post_id]": post_id, "post_disapproval[reason]": reason}
+    ).fail(function(data) {
+      var message = $.map(data.responseJSON.errors, function(msg, attr) { return msg; }).join("; ");
+      $(window).trigger("danbooru:error", "Error: " + message);
+    }).done(function(data) {
+      if ($("#c-posts #a-show").length) {
+        location.reload();
+      } else if ($("#c-moderator-post-queues").length) {
+        $(`#c-moderator-post-queues #post-${post_id}`).hide();
+        $(window).trigger("danbooru:modqueue_increment_processed");
+        $(window).trigger("danbooru:notice", "Post was hidden");
+      }
+    }).always(function() {
+      Post.notice_update("dec");
+    });
+  });
+};
+
+Post.update_tag_count = function(event) {
+  let string = "0 tags";
+  let count = 0;
+
+  if (event) {
+    let tags = [...new Set($(event.target).val().match(/\S+/g))];
+    if (tags) {
+      count = tags.length;
+      string = (count == 1) ? (count + " tag") : (count + " tags")
+    }
+  }
+  $("#tags-container .count").html(string);
+  let klass = "smile";
+  if (count < 15) {
+    klass = "frown";
+  } else if (count < 25) {
+    klass = "meh";
+  }
+  $("#tags-container .options #face").removeClass().addClass(`far fa-${klass}`);
+}
+
+Post.vote_up = function (e) {
+  var id = $(e.target).parent().attr('data-id');
+  Post.vote(id, 1);
+}
+
+Post.vote_down = function (e) {
+  var id = $(e.target).parent().attr('data-id');
+  Post.vote(id, -1);
+}
+
+Post.vote = function (id, score, prevent_unvote) {
+  Post.notice_update("inc");
+  SendQueue.add(function() {
+    $.ajax({
+      method: 'POST',
+      url: `/posts/${id}/votes.json`,
+      data: {
+        score: score,
+        no_unvote: prevent_unvote === true
+      },
+      dataType: 'json',
+      headers: {
+        accept: '*/*;q=0.5,text/javascript'
+      }
+    }).done(function(data) {
+      const scoreClasses = 'score-neutral score-positive score-negative';
+      const postID = id;
+      const postScore = data.score;
+      const ourScore = data.our_score;
+      function scoreToClass(inScore) {
+        if(inScore == 0) return 'score-neutral';
+        return inScore > 0 ? 'score-positive' : 'score-negative';
+      }
+      $(".post-score-"+postID).removeClass(scoreClasses);
+      $(".post-vote-up-"+postID).removeClass(scoreClasses);
+      $(".post-vote-down-"+postID).removeClass(scoreClasses);
+      $('.post-score-'+postID).text(postScore);
+      $('.post-score-'+postID).attr('title', `${data.up_score} up/${data.down_score} down`);
+      $(".post-score-"+postID).addClass(scoreToClass(postScore));
+      $('.post-vote-up-'+postID).addClass(ourScore > 0 ? 'score-positive' : 'score-neutral');
+      $('.post-vote-down-'+postID).addClass(ourScore < 0 ? 'score-negative' : 'score-neutral');
+      $(window).trigger('danbooru:notice', 'Vote saved');
+    }).always(function() {
+      Post.notice_update("dec");
+    });
+  });
+}
+
+Post.set_as_avatar = function(id) {
+  SendQueue.add(function() {
+    $.ajax({
+      method: 'PATCH',
+      url: `/users/${Utility.meta("current-user-id")}.json`,
+      data: {
+        'user[avatar_id]': id
+      },
+      headers: {
+        accept: '*/*;q=0.5,text/javascript'
+      }
+    }).done(function(data) {
+      $(window).trigger("danbooru:notice", "Post set as avatar");
+    });
+  });
+}
+
+$(document).ready(function() {
+  Post.initialize_all();
+});
+
+export default Post
