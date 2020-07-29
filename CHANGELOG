@@ -1,4 +1,7 @@
 Changelog is sorted by date. Most recent changes are up top.
+[29/7/2020]
+* Fix favorite retrieval from database.
+
 [13/7/2020]
 * Disable SameSite cookie specifications (these cause issues with internal IP access since SS cookie stuff needs HTTPS, which you can't exactly get on an IP)
 
