@@ -1,5 +1,8 @@
 Changelog is sorted by date. Most recent changes are up top.
-[01/8/2020]
+[2/8/2020]
+* Remove patch introduced yesterday, patch is now available in core code.
+
+[1/8/2020]
 * Fix broken UpdateTagCategoryJob due to a symbol causing issues. This introduces a new patch to the source code.
 
 [29/7/2020]

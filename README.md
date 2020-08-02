@@ -36,7 +36,6 @@ These are docker images that allow you to deploy an instance of E621 with... rel
 * Patch to artist forms to remove linked users from artists (it relies on missing table fields).
 * Session patch: Disables SameSite cookies, which are causing issues in SessionLoader.
 * User presenter patch: Fixes favorite sorting relying on a non-existing database column, causing errors in showing profiles if users tried to favorite something.
-* Tag model: Symbol is swapped out for a string. Not _quite_ as efficient, but the alternative is mucking up UpdateTagCategoryJobs.
 
 The following change is not a git diff file, but happens in the docker building process:
 
