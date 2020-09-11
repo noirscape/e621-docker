@@ -1,4 +1,7 @@
 Changelog is sorted by date. Most recent changes are up top.
+[11/9/2020]
+* Remove auto-importing SQL using the container. It doesn't generate table relations properly. (Affects issue #2 on the issue tracker).
+
 [2/8/2020]
 * Remove patch introduced yesterday, patch is now available in core code.
 
@@ -25,7 +28,7 @@ Changelog is sorted by date. Most recent changes are up top.
 
 [6/5/2020]
 
-* Fix seeding of database, removed need for migration patchs
+* Fix seeding of database, removed need for migration patches
 * Increase default docker-compose-wait timeout to 180 seconds
 * Removing stray pids folder on startup (fixes remnants of previous process preventing unicorn from starting)
 

@@ -12,6 +12,9 @@ ENV RAILS_ENV=production
 
 ENV SECRET_TOKEN 09fcf6c0075f2a331b807108f8a4a1bb6911ea168bb0407f4947372f1bcf7c5e
 ENV SECRET_KEY 09fcf6c0075f2a331b807108f8a4a1bb6911ea168bb0407f4947372f1bcf7c5e
+ENV PGHOST sql
+ENV PGUSER root
+ENV PGPASSWORD changethis
 
 RUN mkdir -p $INSTALL_PATH
 
@@ -19,7 +22,7 @@ RUN mkdir -p $INSTALL_PATH
 RUN wget -qO - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -; \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list; \
     wget -qO - https://deb.nodesource.com/setup_10.x | bash -; \
-    apt-get update && apt-get install --no-install-recommends -y nodejs yarn build-essential git ffmpeg && rm -rf /var/lib/apt/lists/*; \
+    apt-get update && apt-get install --no-install-recommends -y nodejs yarn build-essential git ffmpeg postgresql-client && rm -rf /var/lib/apt/lists/*; \
     apt-get update && apt-get install --no-install-recommends -y libicu-dev libjpeg-progs libpq-dev libreadline-dev libxml2-dev libexpat1-dev liblcms2-dev libjpeg62-turbo-dev libgif-dev libpng-dev libexif-dev && rm -rf /var/lib/apt/lists/*; \
     gem install rails bundler;
 

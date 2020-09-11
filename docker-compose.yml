@@ -11,6 +11,9 @@ services:
         DANBOORU_SSL_OPTIONS: "{}"
         DANBOORU_MEMCACHED_SERVERS: memcached:11211
         DANBOORU_REDIS_URL: "redis://redis:6379"
+        PGUSER: root
+        PGPASSWORD: changethis
+        PGDATABASE: danbooru2
         REDIS_URL: "redis://redis:6379"
         WAIT_HOSTS: sql:5432, es:9200, memcached:11211, redis:6379
         WAIT_HOSTS_TIMEOUT: 180
