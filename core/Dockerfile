@@ -38,19 +38,17 @@ RUN cd /tmp; \
     cd $INSTALL_PATH; \
     rm -fr /tmp/vips-$VIPS_VERSION.tar.gz /tmp/vips-$VIPS_VERSION;
 
-# 3c: Install broken gems (bundler doesn't like these)
-RUN gem install nokogumbo -v '2.0.2'
-
 # 4: Copy functional e621 to app folder
 # 4a: copy Gemfile + lock
-COPY e621_code/Gemfile* /app/
+COPY e621_code/Gemfile* e621_code/package.json e621_code/yarn.lock /app/
 
-COPY e621_code/package.json e621_code/yarn.lock /app/
-
+# 3c: Install broken gems (bundler doesn't like these)
 # 4b: Install gemfile, Install bundler, and yarn stuff
-RUN bundle install && \
+RUN gem install nokogumbo -v '2.0.2' && \
+    bundle install && \
     bundle check && \
-    yarn install
+    yarn install && \
+    yarn cache clean
 
 # 3a: Install shoreman
 COPY shoreman.sh /usr/bin/shoreman
