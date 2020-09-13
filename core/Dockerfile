@@ -47,8 +47,7 @@ RUN gem install nokogumbo -v '2.0.2'
 
 # 4: Copy functional e621 to app folder
 # 4a: copy Gemfile + lock
-COPY e621_code/Gemfile /app/Gemfile
-COPY e621_code/Gemfile.lock /app/Gemfile.lock
+COPY e621_code/Gemfile* /app/
 # 4b: Install gemfile
 RUN bundle install
 
