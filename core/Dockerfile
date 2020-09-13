@@ -27,9 +27,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y wget ca-certifi
 
 WORKDIR $INSTALL_PATH
 
-# 3a: Install shoreman
-COPY shoreman.sh /usr/bin/shoreman
-
 # 3b: Install libvips
 RUN cd /tmp; \
     wget -q https://github.com/libvips/libvips/releases/download/v$VIPS_VERSION/vips-$VIPS_VERSION.tar.gz; \
@@ -47,30 +44,35 @@ RUN gem install nokogumbo -v '2.0.2'
 # 4: Copy functional e621 to app folder
 # 4a: copy Gemfile + lock
 COPY e621_code/Gemfile* /app/
-# 4b: Install gemfile
-RUN bundle install
+
+COPY e621_code/package.json e621_code/yarn.lock /app/
+
+# 4b: Install gemfile, Install bundler, and yarn stuff
+RUN bundle install && \
+    bundle check && \
+    yarn install
+
+# 3a: Install shoreman
+COPY shoreman.sh /usr/bin/shoreman
 
 # Copy rest of the code
 COPY e621_code /app
-
-# 5: Install bundler and yarn stuff
-RUN bundle check && yarn install
 
 # 6: Apply source patches
 COPY patches/*.diff /app/patches/
 RUN git apply /app/patches/*.diff
 
-# 7: sed db and redis url
-RUN sed -s "s/url: <%= .* %>/host: $DB_URL/g" script/install/database.yml.templ > config/database.yml; \
+    # 7: sed db and redis url
+RUN sed -s "s/url: <%= .* %>/host: $DB_URL/g" script/install/database.yml.templ > config/database.yml && \
     sed -i "s/url: <%= .* %>/url: $REDIS_URL/g" config/cable.yml
 
 # 8: CP config template
 RUN cp script/install/danbooru_local_config.rb.templ config/danbooru_local_config.rb
 
 # 9: Set up token + key
-RUN mkdir -p ~/.danbooru; \
-    echo $SECRET_TOKEN > ~/.danbooru/secret_token; \
-    echo $SECRET_KEY > ~/.danbooru/session_secret_key; \
+RUN mkdir -p ~/.danbooru && \
+    echo $SECRET_TOKEN > ~/.danbooru/secret_token && \
+    echo $SECRET_KEY > ~/.danbooru/session_secret_key && \
     chmod -R 600 ~/.danbooru;
 
 # 10: Webpack compile
