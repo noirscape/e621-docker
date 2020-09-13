@@ -1,3 +1,41 @@
+# FROM debian:buster AS vips-builder
+FROM ruby:2.7.0-slim-buster AS vips-builder
+
+# ARG definitions
+ENV VIPS_VERSION 8.8.3
+
+# 3: Install dependencies
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    ca-certificates \
+    build-essential \
+    pkg-config \
+    git \
+    wget \
+    libicu-dev \
+    libjpeg-progs \
+    libpq-dev \
+    libreadline-dev \
+    libxml2-dev \
+    libexpat1-dev \
+    liblcms2-dev \
+    libjpeg62-turbo-dev \
+    libgif-dev \
+    libpng-dev \
+    libexif-dev \
+    libglib2.0-dev && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get purge   --auto-remove && \
+    apt-get clean
+
+# 3b: Install libvips
+RUN cd /tmp; \
+    wget -q https://github.com/libvips/libvips/releases/download/v$VIPS_VERSION/vips-$VIPS_VERSION.tar.gz && \
+    tar -xf vips-$VIPS_VERSION.tar.gz && \
+    cd vips-$VIPS_VERSION && \
+    ./configure --prefix=/usr && \
+    make install && \
+    rm -fr /tmp/vips-$VIPS_VERSION.tar.gz /tmp/vips-$VIPS_VERSION;
+
 FROM ruby:2.7.0-slim-buster
 
 # Needed stages
@@ -21,22 +59,16 @@ RUN apt-get update && apt-get install --no-install-recommends -y wget ca-certifi
     wget -qO - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -; \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list; \
     wget -qO - https://deb.nodesource.com/setup_10.x | bash -; \
-    apt-get update && apt-get install --no-install-recommends -y nodejs yarn build-essential git ffmpeg postgresql-client pkg-config && rm -rf /var/lib/apt/lists/*; \
-    apt-get update && apt-get install --no-install-recommends -y libicu-dev libjpeg-progs libpq-dev libreadline-dev libxml2-dev libexpat1-dev liblcms2-dev libjpeg62-turbo-dev libgif-dev libpng-dev libexif-dev libglib2.0-dev && rm -rf /var/lib/apt/lists/*; \
+    apt-get update && apt-get install --no-install-recommends -y nodejs yarn ca-certificates build-essential git ffmpeg postgresql-client && rm -rf /var/lib/apt/lists/*; \
+    apt-get update && apt-get install --no-install-recommends -y libicu-dev libjpeg-progs libpq-dev libreadline-dev libxml2-dev libexpat1-dev liblcms2-dev libjpeg62-turbo-dev libgif-dev libpng-dev libexif-dev libglib2.0-dev && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get purge   --auto-remove && \
+    apt-get clean && \
     gem install rails bundler;
 
 WORKDIR $INSTALL_PATH
 
-# 3b: Install libvips
-RUN cd /tmp; \
-    wget -q https://github.com/libvips/libvips/releases/download/v$VIPS_VERSION/vips-$VIPS_VERSION.tar.gz; \
-    tar -xf vips-$VIPS_VERSION.tar.gz; \
-    cd vips-$VIPS_VERSION; \
-    ./configure --prefix=/usr; \
-    make install; \
-    ldconfig; \
-    cd $INSTALL_PATH; \
-    rm -fr /tmp/vips-$VIPS_VERSION.tar.gz /tmp/vips-$VIPS_VERSION;
+COPY --from=vips-builder /usr/lib/libvips* /usr/lib/
 
 # 4: Copy functional e621 to app folder
 # 4a: copy Gemfile + lock
@@ -48,7 +80,8 @@ RUN gem install nokogumbo -v '2.0.2' && \
     bundle install && \
     bundle check && \
     yarn install && \
-    yarn cache clean
+    yarn cache clean && \
+    ldconfig
 
 # 3a: Install shoreman
 COPY shoreman.sh /usr/bin/shoreman
