@@ -1,4 +1,4 @@
-FROM ruby:2.7.0
+FROM ruby:2.7.0-slim-buster
 
 # Needed stages
 # ARG definitions
@@ -17,11 +17,12 @@ ENV	VIPS_VERSION=8.8.3 \
 RUN mkdir -p $INSTALL_PATH
 
 # 3: Install dependencies
-RUN wget -qO - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -; \
+RUN apt-get update && apt-get install --no-install-recommends -y wget ca-certificates gnupg; \
+    wget -qO - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -; \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list; \
     wget -qO - https://deb.nodesource.com/setup_10.x | bash -; \
-    apt-get update && apt-get install --no-install-recommends -y nodejs yarn build-essential git ffmpeg postgresql-client && rm -rf /var/lib/apt/lists/*; \
-    apt-get update && apt-get install --no-install-recommends -y libicu-dev libjpeg-progs libpq-dev libreadline-dev libxml2-dev libexpat1-dev liblcms2-dev libjpeg62-turbo-dev libgif-dev libpng-dev libexif-dev && rm -rf /var/lib/apt/lists/*; \
+    apt-get update && apt-get install --no-install-recommends -y nodejs yarn build-essential git ffmpeg postgresql-client pkg-config && rm -rf /var/lib/apt/lists/*; \
+    apt-get update && apt-get install --no-install-recommends -y libicu-dev libjpeg-progs libpq-dev libreadline-dev libxml2-dev libexpat1-dev liblcms2-dev libjpeg62-turbo-dev libgif-dev libpng-dev libexif-dev libglib2.0-dev && rm -rf /var/lib/apt/lists/*; \
     gem install rails bundler;
 
 WORKDIR $INSTALL_PATH
