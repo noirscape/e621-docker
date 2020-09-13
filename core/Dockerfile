@@ -107,7 +107,8 @@ RUN mkdir -p ~/.danbooru && \
     chmod -R 600 ~/.danbooru;
 
 # 10: Webpack compile
-RUN rails assets:precompile
+RUN rails assets:precompile && \
+    yarn cache clean
 
 # 11: Set up wait
 COPY wait /wait
