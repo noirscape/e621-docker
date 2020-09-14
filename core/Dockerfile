@@ -1,10 +1,10 @@
-# FROM debian:buster AS vips-builder
-FROM ruby:2.7.0-slim-buster AS vips-builder
+# Stage to build libvips
+FROM debian:buster-slim AS vips-builder
 
 # ARG definitions
 ENV VIPS_VERSION 8.8.3
 
-# 3: Install dependencies
+# 2: Install libvips dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
     ca-certificates \
     build-essential \
@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     apt-get purge   --auto-remove && \
     apt-get clean
 
-# 3b: Install libvips
+# 3: Compile and install libvips
 RUN cd /tmp; \
     wget -q https://github.com/libvips/libvips/releases/download/v$VIPS_VERSION/vips-$VIPS_VERSION.tar.gz && \
     tar -xf vips-$VIPS_VERSION.tar.gz && \
@@ -36,13 +36,11 @@ RUN cd /tmp; \
     make install && \
     rm -fr /tmp/vips-$VIPS_VERSION.tar.gz /tmp/vips-$VIPS_VERSION;
 
+# Stage to run e621
 FROM ruby:2.7.0-slim-buster
 
-# Needed stages
-# ARG definitions
-ENV	VIPS_VERSION=8.8.3 \
 # ENV definitions 
-	INSTALL_PATH=/app \
+ENV	INSTALL_PATH=/app \
 	DB_URL=sql \
 	REDIS_URL=redis:6379 \
 	RAILS_ENV=production \
@@ -68,14 +66,15 @@ RUN apt-get update && apt-get install --no-install-recommends -y wget ca-certifi
 
 WORKDIR $INSTALL_PATH
 
+# Copy libvip files from vips-builder stage
 COPY --from=vips-builder /usr/lib/libvips* /usr/lib/
 
-# 4: Copy functional e621 to app folder
-# 4a: copy Gemfile + lock
+# 4a: copy Gemfile + lock, package + yarn.lock for ruby and node packages
 COPY e621_code/Gemfile* e621_code/package.json e621_code/yarn.lock /app/
 
-# 3c: Install broken gems (bundler doesn't like these)
-# 4b: Install gemfile, Install bundler, and yarn stuff
+# Install broken gems (bundler doesn't like these)
+# Install gemfile, Install bundler, and yarn stuff
+# TODO if possible move bundle to it's own build container to keep all dependencies for complilation seperate
 RUN gem install nokogumbo -v '2.0.2' && \
     bundle install && \
     bundle check && \
@@ -83,36 +82,36 @@ RUN gem install nokogumbo -v '2.0.2' && \
     yarn cache clean && \
     ldconfig
 
-# 3a: Install shoreman
+# Install shoreman
 COPY shoreman.sh /usr/bin/shoreman
 
 # Copy rest of the code
 COPY e621_code /app
 
-# 6: Apply source patches
+# Apply source patches
 COPY patches/*.diff /app/patches/
 RUN git apply /app/patches/*.diff
 
-    # 7: sed db and redis url
+# sed db and redis url
 RUN sed -s "s/url: <%= .* %>/host: $DB_URL/g" script/install/database.yml.templ > config/database.yml && \
     sed -i "s/url: <%= .* %>/url: $REDIS_URL/g" config/cable.yml
 
-# 8: CP config template
+# CP config template
 RUN cp script/install/danbooru_local_config.rb.templ config/danbooru_local_config.rb
 
-# 9: Set up token + key
+# Set up token + key
 RUN mkdir -p ~/.danbooru && \
     echo $SECRET_TOKEN > ~/.danbooru/secret_token && \
     echo $SECRET_KEY > ~/.danbooru/session_secret_key && \
     chmod -R 600 ~/.danbooru;
 
-# 10: Webpack compile
+# Webpack compile
 RUN rails assets:precompile && \
     yarn cache clean
 
-# 11: Set up wait
+# Set up wait
 COPY wait /wait
 
-# 12: Run startup script
+# Run startup script
 COPY run.sh /run.sh
 CMD /wait && /run.sh
