@@ -36,6 +36,43 @@ RUN cd /tmp; \
     make install && \
     rm -fr /tmp/vips-$VIPS_VERSION.tar.gz /tmp/vips-$VIPS_VERSION;
 
+# Stage to download and build gems
+FROM ruby:2.7.0-slim-buster AS gem-setup
+
+# 3: Install dependencies
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    build-essential \
+    git \
+    postgresql-client \
+    pkg-config \
+    libicu-dev \
+    libjpeg-progs \
+    libpq-dev \
+    libreadline-dev \
+    libxml2-dev \
+    libexpat1-dev \
+    liblcms2-dev \
+    libjpeg62-turbo-dev \
+    libgif-dev \
+    libpng-dev \
+    libexif-dev \
+    libglib2.0-dev && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get purge   --auto-remove && \
+    apt-get clean && \
+    gem install rails bundler;
+
+WORKDIR /root
+
+# 4a: copy Gemfile + lock, package + yarn.lock for ruby and node packages
+COPY e621_code/Gemfile* e621_code/package.json e621_code/yarn.lock /root/
+
+# Install broken gems (bundler doesn't like these)
+# Install gemfile, Install bundler
+RUN gem install nokogumbo -v '2.0.2' && \
+    bundle install && \
+    bundle check
+
 # Stage to run e621
 FROM ruby:2.7.0-slim-buster
 
@@ -50,35 +87,36 @@ ENV	INSTALL_PATH=/app \
 	PGUSER=root \
 	PGPASSWORD=changethis
 
-RUN mkdir -p $INSTALL_PATH
-
-# 3: Install dependencies
+# 3: Install dependencies & node
 RUN apt-get update && apt-get install --no-install-recommends -y wget ca-certificates gnupg; \
     wget -qO - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -; \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list; \
-    wget -qO - https://deb.nodesource.com/setup_10.x | bash -; \
-    apt-get update && apt-get install --no-install-recommends -y nodejs yarn ca-certificates build-essential git ffmpeg postgresql-client && rm -rf /var/lib/apt/lists/*; \
-    apt-get update && apt-get install --no-install-recommends -y libicu-dev libjpeg-progs libpq-dev libreadline-dev libxml2-dev libexpat1-dev liblcms2-dev libjpeg62-turbo-dev libgif-dev libpng-dev libexif-dev libglib2.0-dev && \
+    wget -qO - https://deb.nodesource.com/setup_10.x | bash - && \
+    apt-get update && apt-get install --no-install-recommends -y \
+    nodejs \
+    yarn \
+    git \
+    ffmpeg \
+    libpq-dev \
+    liblcms2-dev \
+    libgif-dev \
+    libexif-dev && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get purge   --auto-remove && \
-    apt-get clean && \
-    gem install rails bundler;
+    apt-get clean
+
+RUN mkdir -p $INSTALL_PATH
 
 WORKDIR $INSTALL_PATH
 
 # Copy libvip files from vips-builder stage
 COPY --from=vips-builder /usr/lib/libvips* /usr/lib/
 
-# 4a: copy Gemfile + lock, package + yarn.lock for ruby and node packages
-COPY e621_code/Gemfile* e621_code/package.json e621_code/yarn.lock /app/
+# Copy gem files from gem-setup stage
+COPY --from=gem-setup /usr/local/bundle/ /usr/local/bundle/
 
-# Install broken gems (bundler doesn't like these)
-# Install gemfile, Install bundler, and yarn stuff
-# TODO if possible move bundle to it's own build container to keep all dependencies for complilation seperate
-RUN gem install nokogumbo -v '2.0.2' && \
-    bundle install && \
-    bundle check && \
-    yarn install && \
+# Install modules and link libraries 
+RUN yarn install && \
     yarn cache clean && \
     ldconfig
 
@@ -90,7 +128,8 @@ COPY e621_code /app
 
 # Apply source patches
 COPY patches/*.diff /app/patches/
-RUN git apply /app/patches/*.diff
+RUN git apply /app/patches/*.diff && \
+    apt-get purge -y git
 
 # sed db and redis url
 RUN sed -s "s/url: <%= .* %>/host: $DB_URL/g" script/install/database.yml.templ > config/database.yml && \
@@ -107,7 +146,10 @@ RUN mkdir -p ~/.danbooru && \
 
 # Webpack compile
 RUN rails assets:precompile && \
-    yarn cache clean
+    yarn cache clean && \
+    rm -rf node_modules && \
+    apt-get purge -y --auto-remove nodejs yarn && \
+    apt-get clean
 
 # Set up wait
 COPY wait /wait
