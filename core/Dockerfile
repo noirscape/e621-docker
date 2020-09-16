@@ -93,6 +93,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y wget ca-certifi
     echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list; \
     wget -qO - https://deb.nodesource.com/setup_10.x | bash - && \
     apt-get update && apt-get install --no-install-recommends -y \
+    postgresql-client \
     nodejs \
     yarn \
     git \
