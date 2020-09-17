@@ -112,6 +112,7 @@ WORKDIR $INSTALL_PATH
 
 # Copy libvip files from vips-builder stage
 COPY --from=vips-builder /usr/lib/libvips* /usr/lib/
+COPY --from=vips-builder /usr/bin/vips /usr/bin/vips
 
 # Copy gem files from gem-setup stage
 COPY --from=gem-setup /usr/local/bundle/ /usr/local/bundle/
