@@ -67,7 +67,5 @@ The following values should _not_ be overriden by the local_config file.
 Pull Requests for these are welcome.
 
 * Optimize images
-* Reduce amount of stages. Especially in core.
-* Move compilation of libvips to it's own build stage.
 * Build script that takes care of creating data folder in the right way and sets up the env file.
 
