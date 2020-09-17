@@ -1,4 +1,7 @@
 Changelog is sorted by date. Most recent changes are up top.
+[17/9/2020]
+* Core is now using staged builds (thanks @highcup). This greatly reduces the build time and size of the final image. (See also pull #3).
+
 [11/9/2020]
 * Remove auto-importing SQL using the container. It doesn't generate table relations properly. (Affects issue #2 on the issue tracker).
 
