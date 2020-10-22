@@ -1,4 +1,7 @@
 Changelog is sorted by date. Most recent changes are up top.
+[22/10/2020]
+* Add HACKS file.
+
 [17/9/2020]
 * Core is now using staged builds (thanks @highcup). This greatly reduces the build time and size of the final image. (See also pull #3).
 

@@ -14,16 +14,18 @@ These are docker images that allow you to deploy an instance of E621 with... rel
 2. Copy `core/danbooru_local_config.example.rb` to `core/danbooru_local_config.rb`. This file can be used to override any setting in [here](https://github.com/zwagoth/e621ng/blob/master/config/danbooru_default_config.rb). Make sure to check below for the values you _can't_ change (docker overrides a couple in order to make E621 talk to the network's redis, memcached and elasticsearch containers).
 3. Create your data folders. If you're using the default configuration, this will be in the `data` folder locally. Make sure that the elasticsearch scratch space (in default configuration, this is `./data/es`) has been set to be read/write for everywhere.
 4. Set `vm.overcommit_memory=1` and `vm.max_map_count=262144` in `/etc/sysctl.conf` to make redis and elasticsearch work. (If you have a `/etc/sysctl.d` folder, make a new file called `docker.conf` and add them in there). To temporarily raise it for the current session, run `sysctl -w vm.max_map_count=262144` and `sysctl -w vm.overcommit_memory=1` as root.
-5. Run `docker-compose pull` to pull in the redis, memcached and elasticsearch containers.
-6. Run `docker-compose build --pull` to build the core, postgres and frontend containers. Also, get a cup of coffee, this will take a while.
-7. Run `docker-compose up` to bring up the images. On the first run, the database will be initialized, which takes a few minutes.
-8. Success
+5. Run `docker-compose pull` to pull in the containers.
+6. Run `docker-compose up` to bring up the images. On the first run, the database will be initialized, which takes a few minutes.
+7. Reference the HACKS file to see if you need to apply any hacks.
+8. After applying hacks, restart all containers with `docker-compose restart`.
+9. Success
 
 ### Updating
 
 1. Run `docker-compose pull` to update the containers.
-2. Run `docker-compose run --rm core rake db:migrate` to run the database migrations.
-3. Run `docker-compose up` to bring up the images again.
+2. Reference the HACKS file to see if you need to undo or apply any hacks.
+3. Run `docker-compose run --rm core rake db:migrate` to run the database migrations.
+4. Run `docker-compose up` to bring up the images again.
 
 ### Note
 
@@ -54,6 +56,7 @@ The following values should _not_ be overriden by the local_config file.
 
 * When updating the checked out e621 code, do a quick test build of the core. A mere `docker-compose build core --pull` should help identify any errors that might pop up.
 * Nokogumbo fails to build when installed using bundler for some reason. Manually installing it using `gem` works, but it's a workaround. When `sanitize` (the gem that wants nokogumbo) is updated, check to make sure that the build still works and optionally remove the workaround.
+* Users will be able to pull in the repo by just pulling, you'll want to build locally to test if stuff works.
 
 ## Credits
 
@@ -66,6 +69,5 @@ The following values should _not_ be overriden by the local_config file.
 
 Pull Requests for these are welcome.
 
-* Optimize images
 * Build script that takes care of creating data folder in the right way and sets up the env file.
 
